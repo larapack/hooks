@@ -20,9 +20,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        // Set remote for test hooks
-        Hooks::setRemote('http://larapack.dev');
-
         // Cleanup old hooks before testing
         app(Filesystem::class)->deleteDirectory(base_path('hooks'));
 
