@@ -1,6 +1,19 @@
 {
     "name": "larapack/hooks",
-    "description": "",
+    "description": "A Laravel Hook system",
+    "keywords": ["laravel", "hooks"],
+    "license": "MIT",
+    "homepage": "https://larapack.io/",
+    "support": {
+        "issues": "https://github.com/larapack/hooks/issues",
+        "source": "https://github.com/larapack/hooks"
+    },
+    "authors": [
+        {
+            "name": "Mark Topper",
+            "email": "mark@ulties.com"
+        }
+    ],
     "require-dev": {
         "orchestra/testbench": "~3.0"
     },
@@ -13,5 +26,6 @@
         "psr-4": {
             "Larapack\\Hooks\\Tests\\": "tests/"
         }
-    }
+    },
+    "minimum-stability": "stable"
 }
