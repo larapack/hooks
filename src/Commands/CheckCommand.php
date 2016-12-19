@@ -1,0 +1,39 @@
+<?php
+
+namespace Larapack\Hooks\Commands;
+
+use Larapack\Hooks\Hooks;
+use Illuminate\Console\Command;
+
+class CheckCommand extends Command
+{
+    protected $signature = 'hook:check';
+
+    protected $description = 'Check for updates and show hooks that can be updated';
+
+    protected $hooks;
+
+    public function __construct(Hooks $hooks)
+    {
+        $this->hooks = $hooks;
+
+        parent::__construct();
+    }
+
+    public function fire()
+    {
+        $hooks = $this->hooks->checkForUpdates();
+
+        $count = $hooks->count();
+
+        if ($count == 0) {
+            $this->info('No updates available.');
+        }
+
+        $this->info(($count == 1 ? '1 update' : $count.' updates') . 'available.');
+
+        foreach ($hooks as $hook) {
+            $this->comment($hook->name . ' ' . $hook->remoteVersion);
+        }
+    }
+}

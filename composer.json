@@ -1,0 +1,17 @@
+{
+    "name": "larapack/hooks",
+    "description": "",
+    "require-dev": {
+        "orchestra/testbench": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Larapack\\Hooks\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Larapack\\Hooks\\Tests\\": "tests/"
+        }
+    }
+}
