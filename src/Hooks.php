@@ -117,10 +117,10 @@ class Hooks
      * Uninstall a hook.
      *
      * @param $name
-     * @param $remove boolean
+     * @param $keep boolean
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      */
-    public function uninstall($name, $remove = false)
+    public function uninstall($name, $keep = false)
     {
         // Check if installed
         if (!$this->installed($name)) {
@@ -148,7 +148,7 @@ class Hooks
 
         event(new Events\UninstalledHook($name));
 
-        if ($remove) {
+        if (!$keep) {
             $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
         }
     }

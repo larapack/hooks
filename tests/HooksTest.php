@@ -279,13 +279,14 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name' => 'local-test-hook',
+            '--keep' => true,
         ]);
 
         // Check that the hook folder still exists
         $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
     }
 
-    public function test_uninstall_hook_with_remove_parameter()
+    public function test_uninstall_hook_without_keep_parameter()
     {
         $filesystem = app(Filesystem::class);
 
@@ -328,7 +329,6 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name' => 'local-test-hook',
-            '--remove' => true,
         ]);
 
         // Check that the hook no longer folder exists
@@ -430,6 +430,7 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name' => 'github-test-hook',
+            '--keep' => true,
         ]);
 
         // Check that uninstall scripts where runned on the hook

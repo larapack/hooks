@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class UninstallCommand extends Command
 {
-    protected $signature = 'hook:uninstall {name} {--remove}';
+    protected $signature = 'hook:uninstall {name} {--keep}';
 
     protected $description = 'Uninstall a hook';
 
@@ -24,7 +24,7 @@ class UninstallCommand extends Command
     {
         $name = $this->argument('name');
 
-        $this->hooks->uninstall($name, $this->option('remove'));
+        $this->hooks->uninstall($name, $this->option('keep'));
 
         $this->info("Hook [{$name}] have been uninstalled.");
     }

@@ -6,8 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class HooksServiceProvider extends ServiceProvider
 {
-    protected $providers = [];
-
     /**
      * Register the application services.
      */
@@ -62,28 +60,12 @@ class HooksServiceProvider extends ServiceProvider
         // load providers
         foreach ($hooks as $hook) {
             if (isset($hook['provider'])) {
-                $provider = app($hook['provider'], [
-                    'app' => app(),
-                ]);
-
-                if (method_exists($provider, 'register')) {
-                    app()->call([$provider, 'register']);
-                }
-
-                $this->providers[] = $provider;
+                $this->app->register($hook['provider']);
             }
 
             if (isset($hook['providers'])) {
-                foreach ($hook['providers'] as $class) {
-                    $provider = app($class, [
-                        'app' => app(),
-                    ]);
-
-                    if (method_exists($provider, 'register')) {
-                        app()->call([$provider, 'register']);
-                    }
-
-                    $this->providers[] = $provider;
+                foreach ($hook['providers'] as $provider) {
+                    $this->app->register($provider);
                 }
             }
         }
@@ -94,11 +76,7 @@ class HooksServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        foreach ($this->providers as $provider) {
-            if (method_exists($provider, 'boot')) {
-                app()->call([$provider, 'boot']);
-            }
-        }
+        //
     }
 
     /**
