@@ -27,5 +27,5 @@
             "Larapack\\Hooks\\Tests\\": "tests/"
         }
     },
-    "minimum-stability": "stable"
+    "minimum-stability": "dev"
 }
