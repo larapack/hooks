@@ -22,7 +22,16 @@ class Hook implements ArrayAccess, Arrayable
     {
         $this->update($data);
 
-        $this->mergeWithJson(base_path("hooks/{$this->name}/hook.json"));
+        $this->loadJson();
+    }
+
+    public function loadJson($path = null)
+    {
+        if (is_null($path)) {
+            $path = base_path("hooks/{$this->name}/hook.json");
+        }
+
+        $this->mergeWithJson($path);
     }
 
     public function update(array $parameters)

@@ -129,6 +129,8 @@ class Hooks
 
         $hook = $this->hook($name);
 
+        $hook->loadJson();
+
         event(new Events\UninstallingHook($hook));
 
         if ($this->enabled($name)) {
@@ -182,6 +184,8 @@ class Hooks
 
         $hook = $this->hook($name);
 
+        $hook->loadJson();
+
         if ($version == $hook->version) {
             return false;
         }
@@ -234,6 +238,8 @@ class Hooks
 
         $hook = $this->hook($name);
 
+        $hook->loadJson();
+
         event(new Events\EnablingHook($hook));
 
         $this->runScripts($name, 'enable');
@@ -269,6 +275,8 @@ class Hooks
         }
 
         $hook = $this->hook($name);
+
+        $hook->loadJson();
 
         event(new Events\DisablingHook($hook));
 
@@ -517,6 +525,7 @@ class Hooks
         }
 
         $hook = $this->hook($name);
+        $hook->loadJson();
 
         foreach ($events as $event) {
             foreach ($hook->scripts($event) as $script) {
