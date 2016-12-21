@@ -652,6 +652,10 @@ class Hooks
 
         $process = new Process($composer.' dump-autoload');
         $process->setWorkingDirectory(base_path())->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
     }
 
     /**
