@@ -2,10 +2,10 @@
 
 namespace Larapack\Hooks\Downloaders;
 
-use ZipArchive;
-use RuntimeException;
-use Larapack\Hooks\Hooks;
 use Illuminate\Filesystem\Filesystem;
+use Larapack\Hooks\Hooks;
+use RuntimeException;
+use ZipArchive;
 
 class GithubDownloader implements DownloaderInterface
 {
@@ -33,9 +33,9 @@ class GithubDownloader implements DownloaderInterface
 
         $this->filesystem->makeDirectory($this->location);
 
-        $context = stream_context_create(array('http' => array(
+        $context = stream_context_create(['http' => [
             'header' => 'User-Agent: sistecs',
-        )));
+        ]]);
 
         if (is_null($version)) {
             $version = $remote['version'] ? $remote['version'] : 'master';
@@ -47,7 +47,7 @@ class GithubDownloader implements DownloaderInterface
         }
 
         $remoteFile = file_get_contents($url, false, $context);
-        $localFile = fopen($this->location.'/master.zip', "w");
+        $localFile = fopen($this->location.'/master.zip', 'w');
         fwrite($localFile, $remoteFile);
         fclose($localFile);
 

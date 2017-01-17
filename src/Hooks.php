@@ -3,10 +3,10 @@
 namespace Larapack\Hooks;
 
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Collection;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class Hooks
 {
@@ -26,10 +26,10 @@ class Hooks
     }
 
     /**
-     * Create script value
+     * Create script value.
      *
-     * @param string  $key
-     * @param mixed   $value
+     * @param string $key
+     * @param mixed  $value
      */
     public static function addScriptVariable($key, $value)
     {
@@ -60,6 +60,7 @@ class Hooks
      * Install hook.
      *
      * @param $name
+     *
      * @throws \Larapack\Hooks\Exceptions\HookAlreadyInstalledException
      */
     public function install($name, $version = null)
@@ -118,6 +119,7 @@ class Hooks
      *
      * @param $name
      * @param $keep boolean
+     *
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      */
     public function uninstall($name, $keep = false)
@@ -160,9 +162,11 @@ class Hooks
      *
      * @param $name
      * @param string|null $version
+     *
      * @throws \Larapack\Hooks\Exceptions\HookNotFoundException
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
-     * @return boolean
+     *
+     * @return bool
      */
     public function update($name, $version = null)
     {
@@ -217,6 +221,7 @@ class Hooks
      * Enable hook.
      *
      * @param $name
+     *
      * @throws \Larapack\Hooks\Exceptions\HookNotFoundException
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      * @throws \Larapack\Hooks\Exceptions\HookAlreadyEnabledException
@@ -255,6 +260,7 @@ class Hooks
      * Disable a hook.
      *
      * @param $name
+     *
      * @throws \Larapack\Hooks\Exceptions\HookNotFoundException
      * @throws \Larapack\Hooks\Exceptions\HookNotEnabledException
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
@@ -293,6 +299,7 @@ class Hooks
      * Make hook.
      *
      * @param $name
+     *
      * @throws \Larapack\Hooks\Exceptions\HookAlreadyExistsException
      */
     public function make($name)
@@ -330,6 +337,7 @@ class Hooks
      * Download hook.
      *
      * @param array $remote
+     *
      * @throws \Larapack\Hooks\Exceptions\HookAlreadyExistsException
      */
     protected function download($remote, $version = null, $update = false)
@@ -366,6 +374,7 @@ class Hooks
      * Check hooks for updates.
      *
      * @param \Illuminate\Support\Collection $hooks
+     *
      * @return \Illuminate\Support\Collection
      */
     public function checkForUpdates(Collection $hooks = null)
@@ -392,7 +401,8 @@ class Hooks
      * Check if hook is already installed.
      *
      * @param $name
-     * @return boolean
+     *
+     * @return bool
      */
     public function installed($name)
     {
@@ -403,6 +413,7 @@ class Hooks
      * Check if hook is enabled.
      *
      * @param $name
+     *
      * @return bool
      */
     public function enabled($name)
@@ -411,9 +422,10 @@ class Hooks
     }
 
     /**
-     * Check if hook is disabled
+     * Check if hook is disabled.
      *
      * @param $name
+     *
      * @return bool
      */
     public function disabled($name)
@@ -422,10 +434,11 @@ class Hooks
     }
 
     /**
-     * Check if hook is located locally
+     * Check if hook is located locally.
      *
      * @param $name
-     * @return boolean
+     *
+     * @return bool
      */
     public function local($name)
     {
@@ -436,8 +449,10 @@ class Hooks
      * Get hook information.
      *
      * @param $name
+     *
      * @throws \Larapack\Hooks\Exceptions\HookNotFoundException
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
+     *
      * @return \Larapack\Hooks\Hook
      */
     public function hook($name)
@@ -467,6 +482,7 @@ class Hooks
      * Get type of hook.
      *
      * @param $name
+     *
      * @return string
      */
     public function type($name)
@@ -482,6 +498,7 @@ class Hooks
      * Get version of hook.
      *
      * @param $name
+     *
      * @return string|null
      */
     public function version($name)
@@ -495,6 +512,7 @@ class Hooks
      * Get hook details from remote.
      *
      * @param $name
+     *
      * @return array
      */
     public function getRemoteDetails($name)
@@ -514,6 +532,7 @@ class Hooks
      *
      * @param $name
      * @param array|string $events
+     *
      * @return array
      */
     public function runScripts($name, $events)
@@ -559,6 +578,7 @@ class Hooks
      *
      * @param $type
      * @param array $parameters
+     *
      * @return mixed
      */
     public function makeHookData($type, array $parameters = [])
@@ -580,13 +600,14 @@ class Hooks
      * @param $name
      * @param $type
      * @param bool $enable
+     *
      * @return array
      */
     public function makeDefaultHookData($name, $type, $enable = false)
     {
         return [
-            'name' => $name,
-            'type' => $type,
+            'name'    => $name,
+            'type'    => $type,
             'version' => null,
             'enabled' => $enable,
         ];
@@ -623,7 +644,7 @@ class Hooks
     {
         $json = json_encode([
             'last_remote_check' => (!is_null($this->lastRemoteCheck) ? $this->lastRemoteCheck->timestamp : null),
-            'hooks' => $this->hooks(),
+            'hooks'             => $this->hooks(),
         ], JSON_PRETTY_PRINT);
 
         file_put_contents(base_path('hooks/hooks.json'), $json);

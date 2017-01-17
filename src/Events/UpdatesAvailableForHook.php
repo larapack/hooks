@@ -9,8 +9,8 @@ class UpdatesAvailableForHook
     /**
      * Create a new event instance.
      *
-     * @param  string $hook
-     * @param  string $version
+     * @param string $hook
+     * @param string $version
      */
     public function __construct($hook, $version)
     {

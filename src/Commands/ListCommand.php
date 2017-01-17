@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Hooks;
 use Illuminate\Console\Command;
+use Larapack\Hooks\Hooks;
 
 class ListCommand extends Command
 {
@@ -24,7 +24,7 @@ class ListCommand extends Command
     {
         $this->table(['Name', 'Status'], $this->hooks->hooks()->transform(function ($hook) {
             return [
-                'name' => $hook['name'],
+                'name'    => $hook['name'],
                 'enabled' => $hook['enabled'] ? 'Enabled' : 'Disabled',
             ];
         }));

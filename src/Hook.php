@@ -3,8 +3,8 @@
 namespace Larapack\Hooks;
 
 use ArrayAccess;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Filesystem\Filesystem;
 
 class Hook implements ArrayAccess, Arrayable
 {
@@ -130,12 +130,12 @@ class Hook implements ArrayAccess, Arrayable
     public function toArray()
     {
         return [
-            'name' => $this->name,
+            'name'        => $this->name,
             'description' => $this->description,
-            'version' => $this->version,
-            'type' => $this->type,
-            'enabled' => (boolean) $this->enabled,
-            'scripts' => (array) $this->scripts,
+            'version'     => $this->version,
+            'type'        => $this->type,
+            'enabled'     => (bool) $this->enabled,
+            'scripts'     => (array) $this->scripts,
         ];
     }
 

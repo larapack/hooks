@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Tests;
 
-use Larapack\Hooks\Hook;
 use Illuminate\Filesystem\Filesystem;
+use Larapack\Hooks\Hook;
 
 class HooksTest extends TestCase
 {
@@ -28,11 +28,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('github-test-hook');
         $expect = [
-            'name' => 'github-test-hook',
-            'version' => 'v0.0.2',
+            'name'        => 'github-test-hook',
+            'version'     => 'v0.0.2',
             'description' => 'This is a hook.',
-            'type' => 'github',
-            'enabled' => false,
+            'type'        => 'github',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -43,7 +43,7 @@ class HooksTest extends TestCase
     {
         // Install hook and enable hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'     => 'github-test-hook',
             '--enable' => true,
         ]);
 
@@ -89,11 +89,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -130,11 +130,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -148,11 +148,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => true,
+            'type'        => 'local',
+            'enabled'     => true,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -189,11 +189,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -207,11 +207,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => true,
+            'type'        => 'local',
+            'enabled'     => true,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -225,11 +225,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -266,11 +266,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -278,7 +278,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name' => 'local-test-hook',
+            'name'   => 'local-test-hook',
             '--keep' => true,
         ]);
 
@@ -316,11 +316,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('local-test-hook');
         $expect = [
-            'name' => 'local-test-hook',
-            'version' => null,
+            'name'        => 'local-test-hook',
+            'version'     => null,
             'description' => 'This is a hook.',
-            'type' => 'local',
-            'enabled' => false,
+            'type'        => 'local',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -344,7 +344,7 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'v0.0.1',
         ]);
 
@@ -357,11 +357,11 @@ class HooksTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('github-test-hook');
         $expect = [
-            'name' => 'github-test-hook',
-            'version' => 'v0.0.1',
+            'name'        => 'github-test-hook',
+            'version'     => 'v0.0.1',
             'description' => 'This is a hook.',
-            'type' => 'github',
-            'enabled' => false,
+            'type'        => 'github',
+            'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
@@ -380,7 +380,7 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'v0.0.1',
         ]);
 
@@ -429,7 +429,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name' => 'github-test-hook',
+            'name'   => 'github-test-hook',
             '--keep' => true,
         ]);
 
@@ -442,7 +442,7 @@ class HooksTest extends TestCase
     {
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'v0.0.1',
         ]);
 
@@ -460,13 +460,13 @@ class HooksTest extends TestCase
     {
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'v0.0.1',
         ]);
 
         // Update hook
         $this->artisan('hook:update', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'master',
         ]);
 
@@ -479,7 +479,7 @@ class HooksTest extends TestCase
     {
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'github-test-hook',
+            'name'    => 'github-test-hook',
             'version' => 'v0.0.1',
         ]);
 

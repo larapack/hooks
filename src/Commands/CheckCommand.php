@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Hooks;
 use Illuminate\Console\Command;
+use Larapack\Hooks\Hooks;
 
 class CheckCommand extends Command
 {
@@ -30,10 +30,10 @@ class CheckCommand extends Command
             $this->info('No updates available.');
         }
 
-        $this->info(($count == 1 ? '1 update' : $count.' updates') . 'available.');
+        $this->info(($count == 1 ? '1 update' : $count.' updates').'available.');
 
         foreach ($hooks as $hook) {
-            $this->comment($hook->name . ' ' . $hook->remoteVersion);
+            $this->comment($hook->name.' '.$hook->remoteVersion);
         }
     }
 }

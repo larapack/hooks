@@ -19,7 +19,7 @@ class HooksServiceProvider extends ServiceProvider
 
         // Load default configurations
         $this->mergeConfigFrom(
-            dirname(__DIR__) . '/publishable/config/hooks.php', 'hooks'
+            dirname(__DIR__).'/publishable/config/hooks.php', 'hooks'
         );
 
         // Register Hooks system and aliases
