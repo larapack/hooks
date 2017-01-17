@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Hooks;
 use Illuminate\Console\Command;
+use Larapack\Hooks\Hooks;
 
 class InfoCommand extends Command
 {
@@ -32,7 +32,7 @@ class InfoCommand extends Command
 
         $this->comment($name);
         $this->line("  <info>Name:</info>     {$name}");
-        $this->line("  <info>Status:</info>   ".($hook['enabled'] ? 'Enabled' : 'Disabled'));
-        $this->line("  <info>Version:</info>  ".(!is_null($hook['version']) ? $hook['version'] : 'None'));
+        $this->line('  <info>Status:</info>   '.($hook['enabled'] ? 'Enabled' : 'Disabled'));
+        $this->line('  <info>Version:</info>  '.(!is_null($hook['version']) ? $hook['version'] : 'None'));
     }
 }

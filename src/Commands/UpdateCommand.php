@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Hooks;
 use Illuminate\Console\Command;
+use Larapack\Hooks\Hooks;
 
 class UpdateCommand extends Command
 {
@@ -56,7 +56,7 @@ class UpdateCommand extends Command
             return $this->info('Nothing to update');
         }
 
-        $this->info($count . ' ' . ($count == 1 ? 'hook' : 'hooks') . ' updated.');
+        $this->info($count.' '.($count == 1 ? 'hook' : 'hooks').' updated.');
 
         foreach ($updated as $hook) {
             $this->comment(" -> {$hook->name} {$hook->version}");

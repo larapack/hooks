@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Hooks;
 use Illuminate\Console\Command;
+use Larapack\Hooks\Hooks;
 
 class MakeCommand extends Command
 {

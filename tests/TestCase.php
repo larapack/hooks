@@ -3,7 +3,6 @@
 namespace Larapack\Hooks\Tests;
 
 use Illuminate\Filesystem\Filesystem;
-use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
 
 class TestCase extends \Orchestra\Testbench\TestCase
@@ -39,7 +38,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
+     *
      * @return void
      */
     protected function getEnvironmentSetUp($app)

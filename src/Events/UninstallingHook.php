@@ -11,7 +11,7 @@ class UninstallingHook
     /**
      * Create a new event instance.
      *
-     * @param  \Larapack\Hooks\Hook $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     public function __construct(Hook $hook)
     {

@@ -9,7 +9,7 @@ class MadeHook
     /**
      * Create a new event instance.
      *
-     * @param  string $hook
+     * @param string $hook
      */
     public function __construct($hook)
     {
