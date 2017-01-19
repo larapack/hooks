@@ -11,9 +11,6 @@ class HooksTest extends TestCase
     {
         $filesystem = app(Filesystem::class);
 
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
-
         // Install hook
         $this->artisan('hook:install', [
             'name' => 'github-test-hook',
@@ -55,9 +52,6 @@ class HooksTest extends TestCase
     public function test_making_local_hook()
     {
         $filesystem = app(Filesystem::class);
-
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
 
         // Make hook
         $this->artisan('hook:make', [
@@ -103,9 +97,6 @@ class HooksTest extends TestCase
     public function test_enabling_hook()
     {
         $filesystem = app(Filesystem::class);
-
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
 
         // Make hook
         $this->artisan('hook:make', [
@@ -162,9 +153,6 @@ class HooksTest extends TestCase
     public function test_disabling_hook()
     {
         $filesystem = app(Filesystem::class);
-
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
 
         // Make hook
         $this->artisan('hook:make', [
@@ -240,9 +228,6 @@ class HooksTest extends TestCase
     {
         $filesystem = app(Filesystem::class);
 
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
-
         // Make hook
         $this->artisan('hook:make', [
             'name' => 'local-test-hook',
@@ -290,9 +275,6 @@ class HooksTest extends TestCase
     {
         $filesystem = app(Filesystem::class);
 
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
-
         // Make hook
         $this->artisan('hook:make', [
             'name' => 'local-test-hook',
@@ -338,9 +320,6 @@ class HooksTest extends TestCase
     public function test_installing_specific_version()
     {
         $filesystem = app(Filesystem::class);
-
-        // Check that hooks folder does not exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks')));
 
         // Install hook
         $this->artisan('hook:install', [
