@@ -26,11 +26,7 @@ class CheckCommand extends Command
 
         $count = $hooks->count();
 
-        if ($count == 0) {
-            $this->info('No updates available.');
-        }
-
-        $this->info(($count == 1 ? '1 update' : $count.' updates').'available.');
+        $this->info(($count == 1 ? '1 update' : $count.' updates').' available.');
 
         foreach ($hooks as $hook) {
             $this->comment($hook->name.' '.$hook->remoteVersion);

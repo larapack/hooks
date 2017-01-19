@@ -56,6 +56,16 @@ class Hooks
         static::$remote = $remote;
     }
 
+    public function getLastRemoteCheck()
+    {
+        return $this->lastRemoteCheck;
+    }
+
+    public function setLastRemoteCheck(Carbon $carbon)
+    {
+        $this->lastRemoteCheck = $carbon;
+    }
+
     /**
      * Install hook.
      *
@@ -209,6 +219,8 @@ class Hooks
         $hook = new Hook($data);
         $hook->update(['version' => $version]);
         $this->hooks[$name] = $hook;
+
+        $this->remakeJson();
 
         $this->runScripts($name, 'update');
 
@@ -620,18 +632,24 @@ class Hooks
     {
         $hooks = [];
 
-        if ($this->filesystem->exists(base_path('hooks/hooks.json'))) {
-            $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+        if (!$this->filesystem->exists(base_path('hooks'))) {
+            $this->filesystem->makeDirectory(base_path('hooks'));
+        }
 
-            if (isset($data['hooks'])) {
-                foreach ($data['hooks'] as $key => $hook) {
-                    $hooks[$key] = new Hook($hook);
-                }
-            }
+        if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
+            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
+        }
 
-            if (isset($data['last_remote_check'])) {
-                $this->lastRemoteCheck = Carbon::createFromTimestamp($data['last_remote_check']);
+        $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+
+        if (isset($data['hooks'])) {
+            foreach ($data['hooks'] as $key => $hook) {
+                $hooks[$key] = new Hook($hook);
             }
+        }
+
+        if (isset($data['last_remote_check'])) {
+            $this->lastRemoteCheck = Carbon::createFromTimestamp($data['last_remote_check']);
         }
 
         $this->hooks = collect($hooks);

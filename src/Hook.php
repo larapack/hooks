@@ -52,7 +52,13 @@ class Hook implements ArrayAccess, Arrayable
 
     public function hasUpdateAvailable()
     {
-        return $this->getRemoteVersionAttribute() != $this->version;
+        $remoteVersion = $this->getRemoteVersionAttribute();
+
+        if (is_null($remoteVersion)) {
+            return false;
+        }
+
+        return $remoteVersion != $this->version;
     }
 
     public function mergeWithJson($path)
@@ -136,6 +142,7 @@ class Hook implements ArrayAccess, Arrayable
             'type'        => $this->type,
             'enabled'     => (bool) $this->enabled,
             'scripts'     => (array) $this->scripts,
+            'remote'      => (array) $this->remote,
         ];
     }
 
