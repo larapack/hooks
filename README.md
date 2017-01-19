@@ -29,6 +29,10 @@ Then add the service provider to the configuration:
 ],
 ```
 
-# Alternative packages
+# Packages
+
+Packages can be found on [larapack.io](https://larapack.io).
+
+# Alternative systems
 
 - [Voyager Hooks](https://github.com/larapack/voyager-hooks) - Hooks supported directly in the Voyager admin panel.
