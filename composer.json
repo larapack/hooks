@@ -26,6 +26,5 @@
         "psr-4": {
             "Larapack\\Hooks\\Tests\\": "tests/"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }
