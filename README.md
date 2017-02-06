@@ -12,7 +12,7 @@ Made with ❤️ by [Mark Topper](https://marktopper.com)
 
 # Hooks
 
-Hooks is a extension system for your Laravel application.
+Hooks is a extension system for your [Laravel](https://ulties.com) application.
 
 # Installation
 
