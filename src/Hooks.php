@@ -385,7 +385,7 @@ class Hooks
     }
 
     /**
-     * Update download count
+     * Update download count.
      */
     private function updateDownloadCount($name)
     {
