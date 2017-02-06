@@ -380,6 +380,20 @@ class Hooks
 
         // Place new hook on hooks folder
         $downloader->output(base_path("hooks/{$name}"));
+
+        $this->updateDownloadCount($name);
+    }
+
+    /**
+     * Update download count
+     */
+    private function updateDownloadCount($name)
+    {
+        try {
+            file_get_contents(static::$remote."/api/hooks/{$name}/downloaded?url=".url('/'));
+        } catch (\Exception $exception) {
+            // do nothing
+        }
     }
 
     /**
