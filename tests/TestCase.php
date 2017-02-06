@@ -25,6 +25,13 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // Clear old hooks
         $hook = app(Hooks::class);
         $hook->readJsonFile();
+
+        // Delete testbench's fixures tests folder
+        app(Filesystem::class)->deleteDirectory(base_path('tests'));
+
+        // Create tests folder
+        app(Filesystem::class)->makeDirectory(base_path('tests'));
+        file_put_contents(base_path('tests/TestCase.php'), '<?php ');
     }
 
     public function tearDown()
