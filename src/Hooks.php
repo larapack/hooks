@@ -677,7 +677,7 @@ class Hooks
         $json = json_encode([
             'last_remote_check' => (!is_null($this->lastRemoteCheck) ? $this->lastRemoteCheck->timestamp : null),
             'hooks'             => $this->hooks(),
-        ], JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents(base_path('hooks/hooks.json'), $json);
     }
