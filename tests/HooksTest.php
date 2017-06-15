@@ -2,11 +2,18 @@
 
 namespace Larapack\Hooks\Tests;
 
-use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hook;
+use Larapack\Hooks\Hooks;
+use Illuminate\Filesystem\Filesystem;
 
 class HooksTest extends TestCase
 {
+    public function setup()
+    {
+        parent::setup();
+        Hooks::setRemote('https://testing.larapack.io');
+    }
+
     public function test_install_hook_from_github()
     {
         $filesystem = app(Filesystem::class);
