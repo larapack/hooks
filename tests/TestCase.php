@@ -29,9 +29,29 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // Delete testbench's fixures tests folder
         app(Filesystem::class)->deleteDirectory(base_path('tests'));
 
-        // Create tests folder
-        app(Filesystem::class)->makeDirectory(base_path('tests'));
-        file_put_contents(base_path('tests/TestCase.php'), '<?php ');
+        // Clone hooks to testbench's vendor
+        app(Filesystem::class)->deleteDirectory(base_path('vendor/larapack'));
+        app(Filesystem::class)->makeDirectory(base_path('vendor/larapack'));
+        app(Filesystem::class)->makeDirectory(base_path('vendor/larapack/hooks'));
+        app(Filesystem::class)->copyDirectory(__DIR__.'/', base_path('larapack/hooks'));
+
+        // Add hooks to testbench's composer.json
+        $composer = json_decode(app(Filesystem::class)->get(base_path('composer.json')), true);
+        $composer['require']['larapack/hooks'] = '*';
+        $composer['autoload']['classmap'] = collect($composer['autoload']['classmap'])->filter(function ($value) {
+            return $value !== 'tests/TestCase.php';
+        })->all();
+        $composer = app(Filesystem::class)->put(
+            base_path('composer.json'),
+            json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+        //app(Filesystem::class)->delete(base_path('composer.lock'));
+
+        // Delete testbench's hooks tests folder
+        app(Filesystem::class)->deleteDirectory(base_path('tests'));
+
+        // Prepare Composer
+        //app(Hooks::class)->composerCommand('install');
     }
 
     public function tearDown()

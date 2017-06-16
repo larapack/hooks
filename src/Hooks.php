@@ -75,7 +75,7 @@ class Hooks
      */
     public function install($name, $version = null)
     {
-        $this->classmap('hooks');
+        $this->prepareComposer();
 
         // check database if already installed
         if ($this->installed($name)) {
@@ -115,6 +115,7 @@ class Hooks
         $hook->update(['version' => $version]);
         $this->hooks[$name] = $hook;
         $this->remakeJson();
+        $this->updateComposerJson();
 
         $this->dumpAutoload();
 
@@ -677,9 +678,112 @@ class Hooks
         $json = json_encode([
             'last_remote_check' => (!is_null($this->lastRemoteCheck) ? $this->lastRemoteCheck->timestamp : null),
             'hooks'             => $this->hooks(),
-        ], JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         file_put_contents(base_path('hooks/hooks.json'), $json);
+    }
+
+    /**
+     * Update Composer file to load the hooks.
+     *
+     */
+    public function updateComposerJson()
+    {
+        $repositories = [];
+        $require = [];
+        $classmap = [];
+        $include = [];
+        foreach($this->hooks as $hook) {
+            if ($this->composerFileExists($hook)) {
+                $repositories[] = [
+                    'type' => 'path',
+                    'url' => 'hooks/'.$hook->name,
+                ];
+
+                $require[$this->getComposerName($hook)] = '*';
+
+                $include[] = $hook->name.'/composer.json';
+            }
+
+            if (!$this->composerHaveAutoloadSection($hook)) {
+                $classmap[] = 'hooks/'.$hook->name;
+            }
+        }
+
+        $composer = [
+            //'name' => 'hooks',
+            //'version' => '1.0.0',
+            'extra' => [
+                'merge-plugin' => [
+                    'require' => $include,
+                    "recurse" => true,
+                    "replace" => false,
+                    "ignore-duplicates" => false,
+                    "merge-dev" => true,
+                    "merge-extra" => false,
+                    "merge-extra-deep" => false,
+                    "merge-scripts" => false
+                ],
+            ],
+            /*
+            'repositories' => $repositories,
+            'require' => $require,
+            */
+            'autoload' => [
+                'classmap' => $classmap,
+            ],
+            'require' => [
+                "marktopper/composer-hook-dependency-1" => "*"
+            ],
+            //'minimum-stability' => 'dev',
+        ];
+
+        $this->filesystem->put(base_path('hooks/composer.json'), json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * Check if Hook have composer file
+     *
+     * @param  \Larapack\Hooks\Hook  $hook
+     */
+    public function composerFileExists(Hook $hook)
+    {
+        return $this->filesystem->exists(base_path('hooks/'.$hook->name.'/composer.json'));
+    }
+
+    /**
+     * Get or generate name for composer file
+     *
+     * @param  \Larapack\Hooks\Hook  $hook
+     */
+    public function getComposerName(Hook $hook)
+    {
+        $file = base_path('hooks/'.$hook->name.'/composer.json');
+
+        $json = json_decode($this->filesystem->get($file), true);
+        if (!isset($json['name'])) {
+            $json['name'] = $hook->name;
+        }
+
+        $this->filesystem->put($file, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+        return $json['name'];
+    }
+
+    /**
+     * Check if composer have a autoload section
+     *
+     * @param  \Larapack\Hooks\Hook  $hook
+     */
+    public function composerHaveAutoloadSection(Hook $hook)
+    {
+        if (!$this->composerFileExists($hook)) {
+            return false;
+        }
+
+        $json = json_decode($this->filesystem->get(base_path('hooks/'.$hook->name.'/composer.json')), true);
+
+        return isset($json['autoload']);
     }
 
     /**
@@ -701,39 +805,87 @@ class Hooks
      */
     public function dumpAutoload()
     {
+        $this->composerCommand('dump-autoload');
+    }
+
+    /**
+     * Dumps composer autoload.
+     */
+    public function composerCommand($command)
+    {
         $composer = $this->findComposer();
 
-        $process = new Process($composer.' dump-autoload');
+        $process = new Process($composer.' '.$command);
+        $process->setTimeout(1200); // TODO: Make setting
         $process->setWorkingDirectory(base_path())->run();
 
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
+
+        return $process->getOutput();
     }
 
     /**
-     * Add class map to composer autoload.
+     * Ensure that project composer file includes Hooks composer file.
      *
-     * @param string $path
      */
-    public function classmap($path)
+    protected function prepareComposer()
     {
         $json = $this->filesystem->get(base_path('composer.json'));
         $composer = json_decode($json, true);
 
-        if (!isset($composer['autoload'])) {
-            $composer['autoload'] = [];
+        if (!isset($composer['extra'])) {
+            $composer['extra'] = [];
         }
 
-        if (!isset($composer['autoload']['classmap'])) {
-            $composer['autoload']['classmap'] = [];
+        if (!isset($composer['extra']['merge-plugin'])) {
+            $composer['extra']['merge-plugin'] = [];
         }
 
-        if (!in_array('hooks', $composer['autoload']['classmap'])) {
-            $composer['autoload']['classmap'][] = $path;
+        $settings = [
+            "require" => [],
+            "recurse" => true,
+            "replace" => false,
+            "ignore-duplicates" => false,
+            "merge-dev" => true,
+            "merge-extra" => false,
+            "merge-extra-deep" => false,
+            "merge-scripts" => false,
+        ];
+
+        foreach ($settings as $key => $value) {
+            if (!isset($composer['extra']['merge-plugin'][$key])) {
+                $composer['extra']['merge-plugin'][$key] = $value;
+            }
         }
 
-        $new = json_encode($composer, JSON_PRETTY_PRINT);
+        if (!in_array('hooks/composer.json', $composer['extra']['merge-plugin']['require'])) {
+            $composer['extra']['merge-plugin']['require'][] = 'hooks/composer.json';
+        }
+
+        /*
+        if (!isset($composer['repositories'])) {
+            $composer['repositories'] = [];
+        }
+
+        if (collect($composer['repositories'])
+            ->where('url', 'hooks')
+            ->where('type', 'path')
+            ->count() == 0) {
+            $composer['repositories'][] = ['type' => 'path', 'url' => 'hooks'];
+        }
+
+        if (!isset($composer['require'])) {
+            $composer['require'] = [];
+        }
+
+        if (!isset($composer['require']['hooks']) OR $composer['require']['hooks'] !== '*') {
+            $composer['require']['hooks'] = '*';
+        }
+        */
+
+        $new = json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
         if ($json != $new) {
             $this->filesystem->put(base_path('composer.json'), $new);

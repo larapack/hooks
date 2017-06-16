@@ -26,5 +26,9 @@
         "psr-4": {
             "Larapack\\Hooks\\Tests\\": "tests/"
         }
+    },
+    "require": {
+        "wikimedia/composer-merge-plugin": "^1.4",
+        "composer/composer": "^1.4"
     }
 }

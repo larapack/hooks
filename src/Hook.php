@@ -15,14 +15,34 @@ class Hook implements ArrayAccess, Arrayable
     protected $enabled = false;
     protected $remote = [];
     protected $scripts = [];
+    protected $composer = null;
+
+    protected $filesystem;
 
     protected static $jsonParameters = ['description', 'scripts', 'provider', 'providers'];
 
     public function __construct($data)
     {
+        $this->filesystem = app(Filesystem::class);
+
         $this->update($data);
 
         $this->loadJson();
+        $this->loadComposer();
+    }
+
+    public function loadComposer()
+    {
+        $file = base_path('hooks/'.$this->name.'/composer.json');
+
+        if ($this->filesystem->exists($file)) {
+            $this->composer = json_decode($this->filesystem->get($file), true);
+
+            if (!isset($this->composer['version'])) {
+                $this->composer['version'] = $this->version;
+                $this->filesystem->put($file, json_encode($this->composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            }
+        }
     }
 
     public function loadJson($path = null)
@@ -63,10 +83,8 @@ class Hook implements ArrayAccess, Arrayable
 
     public function mergeWithJson($path)
     {
-        $filesystem = app(Filesystem::class);
-
-        if ($filesystem->exists($path)) {
-            $data = json_decode($filesystem->get($path), true);
+        if ($this->filesystem->exists($path)) {
+            $data = json_decode($this->filesystem->get($path), true);
 
             $this->update(
                 collect($data)->only(static::$jsonParameters)->all()
@@ -101,6 +119,11 @@ class Hook implements ArrayAccess, Arrayable
         if (isset($this->remote['version'])) {
             return $this->remote['version'];
         }
+    }
+
+    public function getComposerNameAttribute()
+    {
+        return array_get($this->composer, 'name');
     }
 
     public function offsetExists($offset)
