@@ -2,9 +2,9 @@
 
 namespace Larapack\Hooks\Tests;
 
+use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
-use Illuminate\Filesystem\Filesystem;
 
 class HooksTest extends TestCase
 {
