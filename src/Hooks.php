@@ -685,7 +685,6 @@ class Hooks
 
     /**
      * Update Composer file to load the hooks.
-     *
      */
     public function updateComposerJson()
     {
@@ -693,11 +692,11 @@ class Hooks
         $require = [];
         $classmap = [];
         $include = [];
-        foreach($this->hooks as $hook) {
+        foreach ($this->hooks as $hook) {
             if ($this->composerFileExists($hook)) {
                 $repositories[] = [
                     'type' => 'path',
-                    'url' => 'hooks/'.$hook->name,
+                    'url'  => 'hooks/'.$hook->name,
                 ];
 
                 $require[$this->getComposerName($hook)] = '*';
@@ -715,14 +714,14 @@ class Hooks
             //'version' => '1.0.0',
             'extra' => [
                 'merge-plugin' => [
-                    'require' => $include,
-                    "recurse" => true,
-                    "replace" => false,
-                    "ignore-duplicates" => false,
-                    "merge-dev" => true,
-                    "merge-extra" => false,
-                    "merge-extra-deep" => false,
-                    "merge-scripts" => false
+                    'require'           => $include,
+                    'recurse'           => true,
+                    'replace'           => false,
+                    'ignore-duplicates' => false,
+                    'merge-dev'         => true,
+                    'merge-extra'       => false,
+                    'merge-extra-deep'  => false,
+                    'merge-scripts'     => false,
                 ],
             ],
             /*
@@ -733,7 +732,7 @@ class Hooks
                 'classmap' => $classmap,
             ],
             'require' => [
-                "marktopper/composer-hook-dependency-1" => "*"
+                'marktopper/composer-hook-dependency-1' => '*',
             ],
             //'minimum-stability' => 'dev',
         ];
@@ -742,9 +741,9 @@ class Hooks
     }
 
     /**
-     * Check if Hook have composer file
+     * Check if Hook have composer file.
      *
-     * @param  \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     public function composerFileExists(Hook $hook)
     {
@@ -752,9 +751,9 @@ class Hooks
     }
 
     /**
-     * Get or generate name for composer file
+     * Get or generate name for composer file.
      *
-     * @param  \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     public function getComposerName(Hook $hook)
     {
@@ -771,9 +770,9 @@ class Hooks
     }
 
     /**
-     * Check if composer have a autoload section
+     * Check if composer have a autoload section.
      *
-     * @param  \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     public function composerHaveAutoloadSection(Hook $hook)
     {
@@ -828,7 +827,6 @@ class Hooks
 
     /**
      * Ensure that project composer file includes Hooks composer file.
-     *
      */
     protected function prepareComposer()
     {
@@ -844,14 +842,14 @@ class Hooks
         }
 
         $settings = [
-            "require" => [],
-            "recurse" => true,
-            "replace" => false,
-            "ignore-duplicates" => false,
-            "merge-dev" => true,
-            "merge-extra" => false,
-            "merge-extra-deep" => false,
-            "merge-scripts" => false,
+            'require'           => [],
+            'recurse'           => true,
+            'replace'           => false,
+            'ignore-duplicates' => false,
+            'merge-dev'         => true,
+            'merge-extra'       => false,
+            'merge-extra-deep'  => false,
+            'merge-scripts'     => false,
         ];
 
         foreach ($settings as $key => $value) {

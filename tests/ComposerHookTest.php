@@ -2,9 +2,9 @@
 
 namespace Larapack\Hooks\Tests;
 
+use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
-use Illuminate\Filesystem\Filesystem;
 
 class ComposerHookTest extends TestCase
 {
@@ -41,13 +41,13 @@ class ComposerHookTest extends TestCase
                 'require' => [
                     'hooks/composer.json',
                 ],
-                'recurse' => true,
-                'replace' => false,
+                'recurse'           => true,
+                'replace'           => false,
                 'ignore-duplicates' => false,
-                'merge-dev' => true,
-                'merge-extra' => false,
-                'merge-extra-deep' => false,
-                'merge-scripts' => false,
+                'merge-dev'         => true,
+                'merge-extra'       => false,
+                'merge-extra-deep'  => false,
+                'merge-scripts'     => false,
             ],
             $composer['extra']['merge-plugin']
         );
@@ -79,16 +79,16 @@ class ComposerHookTest extends TestCase
         $this->assertTrue(isset($composer['extra']['merge-plugin']));
         $this->assertEquals(
             [
-                "require" => [
-                    "composer-hook/composer.json"
+                'require' => [
+                    'composer-hook/composer.json',
                 ],
-                "recurse" => true,
-                "replace" => false,
-                "ignore-duplicates" => false,
-                "merge-dev" => true,
-                "merge-extra" => false,
-                "merge-extra-deep" => false,
-                "merge-scripts" => false,
+                'recurse'           => true,
+                'replace'           => false,
+                'ignore-duplicates' => false,
+                'merge-dev'         => true,
+                'merge-extra'       => false,
+                'merge-extra-deep'  => false,
+                'merge-scripts'     => false,
             ],
             $composer['extra']['merge-plugin']
         );
@@ -115,8 +115,8 @@ class ComposerHookTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('composer-hook');
         $expect = [
-            'name'        => 'composer-hook',
-            'enabled'     => false,
+            'name'         => 'composer-hook',
+            'enabled'      => false,
             'composerName' => 'marktopper/composer-hook',
         ];
         foreach ($expect as $key => $value) {
@@ -130,7 +130,7 @@ class ComposerHookTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'composer-hook',
+            'name'     => 'composer-hook',
             '--enable' => true,
         ]);
 
@@ -157,18 +157,18 @@ class ComposerHookTest extends TestCase
                 //'minimum-stability' => 'dev',
                 'extra' => [
                     'merge-plugin' => [
-                        'require' => ['composer-hook/composer.json'],
-                        "recurse" => true,
-                        "replace" => false,
-                        "ignore-duplicates" => false,
-                        "merge-dev" => true,
-                        "merge-extra" => false,
-                        "merge-extra-deep" => false,
-                        "merge-scripts" => false
+                        'require'           => ['composer-hook/composer.json'],
+                        'recurse'           => true,
+                        'replace'           => false,
+                        'ignore-duplicates' => false,
+                        'merge-dev'         => true,
+                        'merge-extra'       => false,
+                        'merge-extra-deep'  => false,
+                        'merge-scripts'     => false,
                     ],
                 ],
                 'require' => [
-                    "marktopper/composer-hook-dependency-1" => "*",
+                    'marktopper/composer-hook-dependency-1' => '*',
                 ],
             ],
             json_decode($filesystem->get(base_path('hooks/composer.json')), true)
@@ -177,8 +177,8 @@ class ComposerHookTest extends TestCase
         // Check that the hook details is correct
         $hook = app('hooks')->hook('composer-hook');
         $expect = [
-            'name'        => 'composer-hook',
-            'enabled'     => true,
+            'name'         => 'composer-hook',
+            'enabled'      => true,
             'composerName' => 'marktopper/composer-hook',
         ];
         foreach ($expect as $key => $value) {
@@ -192,7 +192,7 @@ class ComposerHookTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name' => 'composer-hook',
+            'name'     => 'composer-hook',
             '--enable' => true,
         ]);
 
@@ -212,36 +212,29 @@ class ComposerHookTest extends TestCase
 
     public function test_hook_with_weird_name()
     {
-        
     }
 
     public function test_hook_without_name()
     {
-        
     }
 
     public function test_autoloading_without_composer_file()
     {
-        
     }
 
     public function test_autoloading_with_composer_file_without_autoload_section()
     {
-        
     }
 
     public function test_using_custom_autoloading_method_defined_in_composer_file()
     {
-        
     }
 
     public function test_dependencies_are_fixed_on_update()
     {
-        
     }
 
     public function test_autoloading_are_fixed_on_update()
     {
-        
     }
 }
