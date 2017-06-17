@@ -22,6 +22,8 @@ class Hooks
     {
         $this->filesystem = $filesystem;
 
+        $this->provision();
+
         $this->readJsonFile();
     }
 
@@ -646,14 +648,6 @@ class Hooks
     {
         $hooks = [];
 
-        if (!$this->filesystem->exists(base_path('hooks'))) {
-            $this->filesystem->makeDirectory(base_path('hooks'));
-        }
-
-        if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
-            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
-        }
-
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
         if (isset($data['hooks'])) {
@@ -681,6 +675,67 @@ class Hooks
 
         file_put_contents(base_path('hooks/hooks.json'), $json);
     }
+
+
+    /**
+     * Refresh cache file /hooks/hooks.json.
+     *
+     * @return void
+     */
+    public function refreshCache()
+    {
+        $hooks = [];
+
+        $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+
+        $localHooks  = $this->getLocalHooks();
+        $remoteHooks = json_decode(file_get_contents($this->getRemote()."/api/hooks"), true);
+
+
+        // If cache file exists, we need to get all enabled hooks
+        // and build cache from there.
+        if (isset($data['hooks'])) {
+            foreach ($data['hooks'] as $key => $hook) {
+                if ($hook['enabled']) {
+                    $hooks[$key] = new Hook($hook);
+                    $hooks[$key]->remote = $this->getRemoteDetails($key);
+                }
+            }
+
+            // Exclude enabled hooks from localHooks
+            $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
+                return !in_array($hook, array_keys($hooks));
+            });
+
+            // Exclude enabled hooks from remoteHooks
+            $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
+                return !in_array($hook['name'], array_keys($hooks));
+            });
+        }
+
+        // Merge local hooks
+        foreach ($localHooks as $hook) {
+            $hooks[$hook] = new Hook($this->makeDefaultHookData($hook, 'local'));
+        }
+
+        // Merge remote hooks
+        foreach ($remoteHooks as $hook) {
+            $_hook = $this->makeHookData($hook['type'], [
+                'name'        => $hook['name'],
+                'description' => $hook['description'],
+                'remote'      => $this->getRemoteDetails($hook['name'])
+            ]);
+
+            $hooks[$hook['name']] = new Hook($_hook);
+        }
+
+        $this->hooks = collect($hooks);
+
+        $this->lastRemoteCheck = Carbon::now();
+
+        $this->remakeJson();
+    }
+
 
     /**
      * Get the composer command for the environment.
@@ -737,6 +792,37 @@ class Hooks
 
         if ($json != $new) {
             $this->filesystem->put(base_path('composer.json'), $new);
+        }
+    }
+
+    /**
+     * Get local hooks listed on folder `/hooks`.
+     *
+     * @return array
+     */
+    private function getLocalHooks()
+    {
+        $_hooks = $this->filesystem->directories(base_path('hooks'));
+
+        return array_map(function($_hook){
+            return substr($_hook, strrpos($_hook, '/') + 1);
+        }, $_hooks);
+    }
+
+    /**
+     * Provision hooks requirements.
+     *
+     * @return void
+     */
+    private function provision()
+    {
+        if (!$this->filesystem->exists(base_path('hooks'))) {
+            $this->filesystem->makeDirectory(base_path('hooks'));
+        }
+
+        if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
+            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
+            $this->refreshCache();
         }
     }
 }
