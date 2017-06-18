@@ -679,7 +679,6 @@ class Hooks
         file_put_contents(base_path('hooks/hooks.json'), $json);
     }
 
-
     /**
      * Refresh cache file /hooks/hooks.json.
      *
@@ -691,9 +690,8 @@ class Hooks
 
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
-        $localHooks  = $this->getLocalHooks();
-        $remoteHooks = json_decode(file_get_contents($this->getRemote()."/api/hooks"), true);
-
+        $localHooks = $this->getLocalHooks();
+        $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
 
         // If cache file exists, we need to get all enabled hooks
         // and build cache from there.
@@ -726,7 +724,7 @@ class Hooks
             $_hook = $this->makeHookData($hook['type'], [
                 'name'        => $hook['name'],
                 'description' => $hook['description'],
-                'remote'      => $this->getRemoteDetails($hook['name'])
+                'remote'      => $this->getRemoteDetails($hook['name']),
             ]);
 
             $hooks[$hook['name']] = new Hook($_hook);
@@ -738,7 +736,6 @@ class Hooks
 
         $this->remakeJson();
     }
-
 
     /**
      * Get the composer command for the environment.
@@ -807,7 +804,7 @@ class Hooks
     {
         $_hooks = $this->filesystem->directories(base_path('hooks'));
 
-        return array_map(function($_hook){
+        return array_map(function ($_hook) {
             return substr($_hook, strrpos($_hook, '/') + 1);
         }, $_hooks);
     }
