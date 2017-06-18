@@ -10,8 +10,7 @@ use Symfony\Component\Process\Process;
 
 class Hooks
 {
-    // protected static $remote = 'https://larapack.io';
-    protected static $remote = 'http://larapack.dev';
+    protected static $remote = 'https://larapack.io';
 
     protected $filesystem;
     protected $hooks;
@@ -96,6 +95,7 @@ class Hooks
             $this->download($remote, $version);
         }
 
+
         // Add this hook to JSON
         if (isset($remote)) {
             $data = $this->makeHookData($remote['type'], $remote);
@@ -113,9 +113,11 @@ class Hooks
             $data = array_merge(['version' => $version], $data);
         }
 
+        $data = array_merge(['installed' => true], $data);
+
         // Add data to json
         $hook = new Hook($data);
-        $hook->update(['version' => $version]);
+
         $this->hooks[$name] = $hook;
         $this->remakeJson();
 
@@ -158,8 +160,10 @@ class Hooks
 
         $this->runScripts($name, 'uninstall');
 
-        $hooks = $this->hooks()->where('name', '!=', $name);
-        $this->hooks = $hooks;
+        $hook->update([
+            'enabled'   => false,
+            'installed' => false
+        ]);
 
         $this->remakeJson();
 
@@ -699,7 +703,9 @@ class Hooks
             foreach ($data['hooks'] as $key => $hook) {
                 if ($hook['enabled']) {
                     $hooks[$key] = new Hook($hook);
-                    $hooks[$key]->remote = $this->getRemoteDetails($key);
+                    if ($hook['type'] != 'local') {
+                        $hooks[$key]->remote = $this->getRemoteDetails($key);
+                    }
                 }
             }
 
@@ -822,6 +828,9 @@ class Hooks
 
         if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
             $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
+        }
+
+        if (!isset($this->hooks['hooks'])) {
             $this->refreshCache();
         }
     }
