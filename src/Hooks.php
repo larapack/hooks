@@ -10,7 +10,8 @@ use Symfony\Component\Process\Process;
 
 class Hooks
 {
-    protected static $remote = 'https://larapack.io';
+    // protected static $remote = 'https://larapack.io';
+    protected static $remote = 'http://larapack.dev';
 
     protected $filesystem;
     protected $hooks;
@@ -434,7 +435,7 @@ class Hooks
      */
     public function installed($name)
     {
-        return isset($this->hooks[$name]);
+        return isset($this->hooks[$name]) && $this->hooks[$name]->installed;
     }
 
     /**
@@ -627,17 +628,19 @@ class Hooks
      *
      * @param $name
      * @param $type
-     * @param bool $enable
+     * @param bool $enabled
+     * @param bool $installed
      *
      * @return array
      */
-    public function makeDefaultHookData($name, $type, $enable = false)
+    public function makeDefaultHookData($name, $type, $enabled = false, $installed = false)
     {
         return [
-            'name'    => $name,
-            'type'    => $type,
-            'version' => null,
-            'enabled' => $enable,
+            'name'      => $name,
+            'type'      => $type,
+            'version'   => null,
+            'enabled'   => $enabled,
+            'installed' => $installed,
         ];
     }
 

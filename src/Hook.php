@@ -13,6 +13,7 @@ class Hook implements ArrayAccess, Arrayable
     protected $version;
     protected $type;
     protected $enabled = false;
+    protected $installed = false;
     protected $remote = [];
     protected $scripts = [];
 
@@ -141,6 +142,7 @@ class Hook implements ArrayAccess, Arrayable
             'version'     => $this->version,
             'type'        => $this->type,
             'enabled'     => (bool) $this->enabled,
+            'installed'   => (bool) $this->installed,
             'scripts'     => (array) $this->scripts,
             'remote'      => (array) $this->remote,
         ];
