@@ -95,7 +95,6 @@ class Hooks
             $this->download($remote, $version);
         }
 
-
         // Add this hook to JSON
         if (isset($remote)) {
             $data = $this->makeHookData($remote['type'], $remote);
@@ -162,7 +161,7 @@ class Hooks
 
         $hook->update([
             'enabled'   => false,
-            'installed' => false
+            'installed' => false,
         ]);
 
         $this->remakeJson();
