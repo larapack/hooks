@@ -329,11 +329,6 @@ class Hooks
 
         event(new Events\MakingHook($name));
 
-        // Ensure hooks folder exists
-        if (!$this->filesystem->isDirectory(base_path('hooks'))) {
-            $this->filesystem->makeDirectory(base_path('hooks'));
-        }
-
         // Create folder for the new hook
         $this->filesystem->makeDirectory(base_path("hooks/{$name}"));
 
@@ -373,11 +368,6 @@ class Hooks
         // Download hook
         $downloader = app('hooks.downloaders.'.$remote['type']);
         $downloader->download($remote, $version);
-
-        // Ensure hooks folder exists
-        if (!$this->filesystem->isDirectory(base_path('hooks'))) {
-            $this->filesystem->makeDirectory(base_path('hooks'));
-        }
 
         // Remove old hook
         if ($this->filesystem->isDirectory(base_path("hooks/{$name}"))) {
