@@ -658,7 +658,6 @@ class Hooks
 
         if (!isset($data['hooks'])) {
             $this->refreshCache();
-
         } else {
             foreach ($data['hooks'] as $key => $hook) {
                 $hooks[$key] = new Hook($hook);
