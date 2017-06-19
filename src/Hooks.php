@@ -113,12 +113,12 @@ class Hooks
             $data = array_merge(['version' => $version], $data);
         }
 
-        $data = array_merge(['installed' => true], $data);
-
         // Add data to json
         $hook = new Hook($data);
+        $hook->update(['installed' => true]);
 
         $this->hooks[$name] = $hook;
+
         $this->remakeJson();
 
         $this->dumpAutoload();
@@ -657,7 +657,10 @@ class Hooks
 
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
-        if (isset($data['hooks'])) {
+        if (!isset($data['hooks'])) {
+            $this->refreshCache();
+
+        } else {
             foreach ($data['hooks'] as $key => $hook) {
                 $hooks[$key] = new Hook($hook);
             }
@@ -828,10 +831,6 @@ class Hooks
 
         if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
             $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
-        }
-
-        if (!isset($this->hooks['hooks'])) {
-            $this->refreshCache();
         }
     }
 }
