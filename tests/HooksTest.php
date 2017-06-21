@@ -2,12 +2,9 @@
 
 namespace Larapack\Hooks\Tests;
 
+use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
-use Composer\Command\RequireCommand;
-use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 class HooksTest extends TestCase
 {
@@ -28,7 +25,7 @@ class HooksTest extends TestCase
         $this->assertTrue(isset($composer['repositories']));
         $this->assertEquals([
             'hooks' => [
-                'url' => 'https://testing.larapack.io',
+                'url'  => 'https://testing.larapack.io',
                 'type' => 'composer',
             ],
         ], $composer['repositories']);
