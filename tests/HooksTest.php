@@ -4,14 +4,34 @@ namespace Larapack\Hooks\Tests;
 
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
+use Composer\Command\RequireCommand;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class HooksTest extends TestCase
 {
     public function setup()
     {
         parent::setup();
-        Hooks::setRemote('https://testing.larapack.io');
+
+        $this->artisan('hook:setup', [
+            '--url' => env('HOOKS_COMPOSER_REPOSITORY', 'https://testing.larapack.io'),
+        ]);
+    }
+
+    public function test_repository_set()
+    {
+        $filesystem = app(Filesystem::class);
+
+        $composer = json_decode($filesystem->get(base_path('composer.json')), true);
+        $this->assertTrue(isset($composer['repositories']));
+        $this->assertEquals([
+            'hooks' => [
+                'url' => 'https://testing.larapack.io',
+                'type' => 'composer',
+            ],
+        ], $composer['repositories']);
     }
 
     public function test_install_hook_from_github()

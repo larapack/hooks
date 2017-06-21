@@ -84,6 +84,7 @@ class HooksServiceProvider extends ServiceProvider
      */
     protected function registerCommands()
     {
+        $this->commands(Commands\SetupCommand::class);
         $this->commands(Commands\MakeCommand::class);
         $this->commands(Commands\InstallCommand::class);
         $this->commands(Commands\UninstallCommand::class);

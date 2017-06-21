@@ -2,8 +2,11 @@
 
 namespace Larapack\Hooks\Tests;
 
-use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hooks;
+use Larapack\Hooks\Composer;
+use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -32,6 +35,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // Create tests folder
         app(Filesystem::class)->makeDirectory(base_path('tests'));
         file_put_contents(base_path('tests/TestCase.php'), '<?php ');
+
+        // Remove repository section from composer file.
+        $composer = new Composer(base_path('composer.json'));
+        $composer->unset('repositories');
+        $composer->save();
     }
 
     public function tearDown()
@@ -58,6 +66,34 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'database' => ':memory:',
             'prefix'   => '',
         ]);
+    }
+
+    /**
+     * Get the composer command for the environment.
+     *
+     * @return string
+     */
+    protected function findComposer()
+    {
+        if (file_exists(getcwd().'/composer.phar')) {
+            return '"'.PHP_BINARY.'" '.getcwd().'/composer.phar';
+        }
+
+        return 'composer';
+    }
+
+    public function runComposerCommand($command)
+    {
+        $composer = $this->findComposer();
+
+        $process = new Process($composer.' '.$command);
+        $process->setWorkingDirectory(base_path())->run();
+
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
+
+        return $process;
     }
 }
 

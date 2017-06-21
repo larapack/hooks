@@ -75,7 +75,7 @@ class Hooks
      */
     public function install($name, $version = null)
     {
-        $this->classmap('hooks');
+        //$this->classmap('hooks');
 
         // check database if already installed
         if ($this->installed($name)) {
@@ -84,6 +84,15 @@ class Hooks
 
         event(new Events\InstallingHook($name));
 
+        // Prepare a repository if the hook is located locally
+        if ($this->local($name)) {
+            $this->prepareLocalInstallation($name);
+        }
+
+        // Require hook
+        $this->composerRequire($name, $version);
+
+        /*
         // download hook if not local
         if (!$this->local($name)) {
             // Get remote details
@@ -117,10 +126,13 @@ class Hooks
         $this->remakeJson();
 
         $this->dumpAutoload();
+        */
 
+        // TODO: Move to Composer Plugin
         // Run install scripts
         $this->runScripts($name, 'install');
 
+        // TODO: Move to Composer Plugin
         event(new Events\InstalledHook($hook));
     }
 
