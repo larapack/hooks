@@ -17,6 +17,12 @@
     "require": {
         "composer/composer": "~1.4"
     },
+    "repositories": {
+        "hooks": {
+            "url": "https://testing.larapack.io",
+            "type": "composer"
+        }
+    },
     "require-dev": {
         "orchestra/testbench": "~3.0"
     },
