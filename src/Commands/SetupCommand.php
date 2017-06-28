@@ -2,9 +2,9 @@
 
 namespace Larapack\Hooks\Commands;
 
-use Larapack\Hooks\Composer;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Larapack\Hooks\Composer;
 
 class SetupCommand extends Command
 {
@@ -29,7 +29,7 @@ class SetupCommand extends Command
 
         $composer->setRepository(static::REPOSITORY_NAME, [
             'type' => 'composer',
-            'url' => $this->option('url'),
+            'url'  => $this->option('url'),
         ]);
 
         if (starts_with($this->option('url'), 'http://')) {
