@@ -4,15 +4,11 @@ namespace Larapack\Hooks;
 
 use Carbon\Carbon;
 use Composer\XdebugHandler;
-use Larapack\Hooks\Composer;
-use Illuminate\Support\Collection;
+
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\NullOutput;
-use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class Hooks
 {
@@ -45,7 +41,7 @@ class Hooks
         error_reporting(-1);
 
         // Create output for XdebugHandler and Application
-        $this->composerOutput = new RawOutput;
+        $this->composerOutput = new RawOutput();
         $xdebug = new XdebugHandler($this->composerOutput);
         $xdebug->check();
         unset($xdebug);
@@ -55,7 +51,7 @@ class Hooks
             $memoryInBytes = function ($value) {
                 $unit = strtolower(substr($value, -1, 1));
                 $value = (int) $value;
-                switch($unit) {
+                switch ($unit) {
                     case 'g':
                         $value *= 1024;
                         // no break (cumulative multiplier)
@@ -65,6 +61,7 @@ class Hooks
                     case 'k':
                         $value *= 1024;
                 }
+
                 return $value;
             };
             $memoryLimit = trim(ini_get('memory_limit'));
@@ -78,7 +75,7 @@ class Hooks
         // Set environment
         putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
         //putenv('COMPOSER='.realpath(base_path('composer.json')));
-        
+
         // Prepare Composer Application instance
         $this->composer = new \Composer\Console\Application();
         $this->composer->setAutoExit(false);
@@ -209,7 +206,7 @@ class Hooks
     {
         $this->composerJson->setRepository($name, [
             'type' => 'vcs',
-            'url' => "hooks/{$name}",
+            'url'  => "hooks/{$name}",
         ]);
 
         $this->composerJson->save();
@@ -751,7 +748,7 @@ class Hooks
     public function composerRequire(array $packages)
     {
         return $this->runComposer([
-            'command' => 'require',
+            'command'  => 'require',
             'packages' => $packages,
         ]);
     }
@@ -766,7 +763,7 @@ class Hooks
         return $this->composerOutput->output();
     }
 
-    /**
+    /*
      * Get the composer command for the environment.
      *
      * @return string
@@ -782,7 +779,7 @@ class Hooks
     }
     */
 
-    /**
+    /*
      * Dumps composer autoload.
      */
     /*

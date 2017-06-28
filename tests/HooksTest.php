@@ -51,7 +51,7 @@ class HooksTest extends TestCase
         $this->assertTrue(isset($composer['repositories']));
         $this->assertEquals([
             'hooks' => [
-                'url' => static::COMPOSER_REPOSITORY,
+                'url'  => static::COMPOSER_REPOSITORY,
                 'type' => 'composer',
             ],
         ], $composer['repositories']);
@@ -76,7 +76,7 @@ class HooksTest extends TestCase
         $hook = app('hooks')->hook('composer-github-hook');
         $expect = [
             'name'        => 'composer-github-hook',
-            'version'     => 'dev-master',//'v0.0.2',// TODO: !!!
+            'version'     => 'dev-master', //'v0.0.2',// TODO: !!!
             'description' => 'This is a hook',
             //'type'        => 'github', // TODO: !!!
             'enabled'     => false,
