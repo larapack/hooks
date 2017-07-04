@@ -46,7 +46,7 @@ class Composer
         $this->filesystem->put($this->location, $this->encode($this->items->all()));
     }
 
-    public function unset($key)
+    public function remove($key)
     {
         $this->items[$key];
 
