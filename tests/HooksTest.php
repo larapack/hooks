@@ -3,9 +3,9 @@
 namespace Larapack\Hooks\Tests;
 
 use Illuminate\Filesystem\Filesystem;
+use Larapack\Hooks\Composer;
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
-use Larapack\Hooks\Composer;
 
 class HooksTest extends TestCase
 {
@@ -24,7 +24,7 @@ class HooksTest extends TestCase
     public function test_repository_set()
     {
         $filesystem = app(Filesystem::class);
-        $composer = new Composer;
+        $composer = new Composer();
 
         $this->assertTrue($composer->has('repositories'));
         $this->assertEquals([
