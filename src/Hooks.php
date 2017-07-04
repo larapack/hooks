@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Process\Process;
 
 class Hooks
 {
@@ -72,14 +71,15 @@ class Hooks
 
     public function readOutdated()
     {
-        $file = base_path("hooks/outdated.json");
+        $file = base_path('hooks/outdated.json');
 
         if ($this->filesystem->exists($file)) {
             $this->outdated = json_decode($this->filesystem->get($file), true);
         }
     }
 
-    protected function memoryInBytes($value) {
+    protected function memoryInBytes($value)
+    {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int) $value;
 
@@ -116,7 +116,7 @@ class Hooks
         if (!function_exists('ini_set')) {
             return;
         }
-        
+
         $memoryLimit = ini_get('memory_limit');
 
         // Increase memory_limit if it is lower than 1.5GB
@@ -133,7 +133,7 @@ class Hooks
         if (static::$memoryLimit != -1) {
             @ini_set('memory_limit', $memoryLimit);
         }
-        
+
         static::$memoryLimitSet = true;
     }
 
@@ -209,7 +209,7 @@ class Hooks
         } else {
             $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
         }
-        // TODO: Handle the case when Composer outputs: 
+        // TODO: Handle the case when Composer outputs:
         // Your requirements could not be resolved to an installable set of packages.
         //
         //      Problem 1
@@ -318,7 +318,7 @@ class Hooks
             $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
         }
 
-        // TODO: Handle the case when Composer outputs: 
+        // TODO: Handle the case when Composer outputs:
         // Your requirements could not be resolved to an installable set of packages.
         //
         //      Problem 1
@@ -520,7 +520,7 @@ class Hooks
     }
 
     /**
-     * Get the latest version number of a hook if outdated
+     * Get the latest version number of a hook if outdated.
      *
      * @param $name
      *
@@ -735,7 +735,7 @@ class Hooks
             '--working-dir' => base_path('/'),
         ], $input));
 
-        $this->composer->run($input, $output = new RawOutput);
+        $this->composer->run($input, $output = new RawOutput());
 
         $this->composerOutput[] = $output;
 

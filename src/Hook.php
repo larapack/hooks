@@ -66,7 +66,7 @@ class Hook implements ArrayAccess, Arrayable
     public function getComposerJsonFile()
     {
         $path = 'vendor/'.$this->name;
-        
+
         if ($this->isLocal()) {
             $path = 'hooks/'.$this->name;
         }

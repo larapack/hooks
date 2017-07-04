@@ -5,8 +5,6 @@ namespace Larapack\Hooks\Tests;
 use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Composer;
 use Larapack\Hooks\Hooks;
-use Symfony\Component\Process\Exception\ProcessFailedException;
-use Symfony\Component\Process\Process;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
