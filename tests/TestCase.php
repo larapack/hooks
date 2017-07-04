@@ -36,27 +36,14 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $filesystem->makeDirectory(base_path('tests'));
         file_put_contents(base_path('tests/TestCase.php'), '<?php ');
 
-        // Remove repository section from composer file.
-        $composer = new Composer(base_path('composer.json'));
-        $composer->remove('repositories');
-        $composer->save();
-
-        // Remove the minimum stability.
-        $composer->remove('minimum-stability');
-        $composer->save();
-
         // Cleanup Composer
-        $composer = json_decode($filesystem->get(base_path('composer.json')), true);
-        $composer['require'] = [
-            'laravel/framework' => $composer['require']['laravel/framework'],
-        ];
-        if (isset($composer['repositories'])) {
-            unset($composer['repositories']);
-        }
-        if (isset($composer['minimum-stability'])) {
-            unset($composer['minimum-stability']);
-        }
-        $filesystem->put(base_path('composer.json'), json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $composer = new Composer();
+        $composer->set('repositories', []);
+        $composer->set('minimum-stability', 'stable');
+        $composer->set('require', [
+            'laravel/framework' => $composer->get('require.laravel/framework')
+        ]);
+        $composer->save();
         $filesystem->delete(base_path('composer.lock'));
 
         // Cleanup vendor

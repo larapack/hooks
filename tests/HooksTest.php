@@ -5,6 +5,7 @@ namespace Larapack\Hooks\Tests;
 use Illuminate\Filesystem\Filesystem;
 use Larapack\Hooks\Hook;
 use Larapack\Hooks\Hooks;
+use Larapack\Hooks\Composer;
 
 class HooksTest extends TestCase
 {
@@ -23,16 +24,15 @@ class HooksTest extends TestCase
     public function test_repository_set()
     {
         $filesystem = app(Filesystem::class);
+        $composer = new Composer;
 
-        $composer = json_decode($filesystem->get(base_path('composer.json')), true);
-
-        $this->assertTrue(isset($composer['repositories']));
+        $this->assertTrue($composer->has('repositories'));
         $this->assertEquals([
             'hooks' => [
                 'url'  => static::COMPOSER_REPOSITORY,
                 'type' => 'composer',
             ],
-        ], $composer['repositories']);
+        ], $composer->get('repositories'));
     }
 
     public function test_install_hook_from_github()
@@ -45,10 +45,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/composer-github-hook')));
+        $this->assertDirectoryExists(base_path('vendor/composer-github-hook'));
 
         // Check that the hook details is correct
         $hook = app('hooks')->hook('composer-github-hook');
@@ -88,10 +88,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
 
         // Check that hook is not yet installed
         $this->assertCount(0, app('hooks')->hooks()->all());
@@ -134,10 +134,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
 
         // Check that hook is not yet installed
         $hooks = app('hooks')->hooks()->all();
@@ -192,10 +192,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
 
         // Check that hook is not yet installed
         $hooks = app('hooks')->hooks()->all();
@@ -269,10 +269,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
 
         // Check that hook is not yet installed
         $hooks = app('hooks')->hooks()->all();
@@ -303,8 +303,8 @@ class HooksTest extends TestCase
             '--keep' => true,
         ]);
 
-        // Check that the hook folder still exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        // Check that the hook folder exists
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
     }
 
     public function test_uninstall_hook_without_keep_parameter()
@@ -317,10 +317,10 @@ class HooksTest extends TestCase
         ]);
 
         // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
+        $this->assertDirectoryExists(base_path('hooks'));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryExists(base_path('hooks/local-test-hook'));
 
         // Check that hook is not yet installed
         $hooks = app('hooks')->hooks()->all();
@@ -351,7 +351,7 @@ class HooksTest extends TestCase
         ]);
 
         // Check that the hook no longer folder exists
-        $this->assertFalse($filesystem->isDirectory(base_path('hooks/local-test-hook')));
+        $this->assertDirectoryNotExists(base_path('hooks/local-test-hook'));
     }
 
     public function test_installing_specific_version()
@@ -364,11 +364,8 @@ class HooksTest extends TestCase
             'version' => 'v1.0.0',
         ]);
 
-        // Check that hooks folder does exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
-
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/composer-github-hook')));
+        $this->assertDirectoryExists(base_path('vendor/composer-github-hook'));
 
         // Check that the hook details is correct
         $hook = app('hooks')->hook('composer-github-hook');
@@ -548,7 +545,7 @@ class HooksTest extends TestCase
         $filesystem = app(Filesystem::class);
 
         // Make sure dependency not already exists
-        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+        $this->assertDirectoryNotExists(base_path('vendor/marktopper/composer-hook-dependency-1'));
 
         // Install hook
         $this->artisan('hook:install', [
@@ -556,7 +553,7 @@ class HooksTest extends TestCase
         ]);
 
         // Make sure dependency is now downloaded
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+        $this->assertDirectoryExists(base_path('vendor/marktopper/composer-hook-dependency-1'));
     }
 
     public function test_updating_updates_dependencies()
@@ -564,8 +561,8 @@ class HooksTest extends TestCase
         $filesystem = app(Filesystem::class);
 
         // Make sure dependency not already exists
-        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
-        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+        $this->assertDirectoryNotExists(base_path('vendor/marktopper/composer-hook-dependency-1'));
+        $this->assertDirectoryNotExists(base_path('vendor/marktopper/composer-hook-dependency-2'));
 
         // Install hook
         $this->artisan('hook:install', [
@@ -574,8 +571,8 @@ class HooksTest extends TestCase
         ]);
 
         // Make sure dependency is now downloaded
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
-        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+        $this->assertDirectoryExists(base_path('vendor/marktopper/composer-hook-dependency-1'));
+        $this->assertDirectoryNotExists(base_path('vendor/marktopper/composer-hook-dependency-2'));
 
         Hooks::useVersionWildcardOnUpdate();
 
@@ -585,8 +582,8 @@ class HooksTest extends TestCase
         ]);
 
         // Make sure dependency is now downloaded
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
-        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+        $this->assertDirectoryExists(base_path('vendor/marktopper/composer-hook-dependency-1'));
+        $this->assertDirectoryExists(base_path('vendor/marktopper/composer-hook-dependency-2'));
     }
 
     // TODO: Test that if a hook requires another hook, that hook should be loaded as well

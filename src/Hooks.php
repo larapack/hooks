@@ -224,7 +224,7 @@ class Hooks
 
     public function prepareLocalInstallation($name)
     {
-        $this->composerJson->setRepository($name, [
+        $this->composerJson->addRepository($name, [
             'type' => 'vcs',
             'url'  => "hooks/{$name}",
         ]);
