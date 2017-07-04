@@ -38,11 +38,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         // Remove repository section from composer file.
         $composer = new Composer(base_path('composer.json'));
-        $composer->unset('repositories');
+        $composer->remove('repositories');
         $composer->save();
 
         // Remove the minimum stability.
-        $composer->unset('minimum-stability');
+        $composer->remove('minimum-stability');
         $composer->save();
 
         // Cleanup Composer
