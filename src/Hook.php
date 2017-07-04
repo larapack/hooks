@@ -11,18 +11,72 @@ class Hook implements ArrayAccess, Arrayable
     protected $name;
     protected $description = 'This is a hook.';
     protected $version;
-    protected $type;
-    protected $enabled = false;
-    protected $remote = [];
-    protected $scripts = [];
 
-    protected static $jsonParameters = ['description', 'scripts', 'provider', 'providers'];
+    protected $enabled = false;
+
+    protected $latest = null;
+
+    protected $composerJson;
+
+    protected static $jsonParameters = ['description', 'enabled'];
 
     public function __construct($data)
     {
         $this->update($data);
 
         $this->loadJson();
+    }
+
+    public function getProviders()
+    {
+        return $this->getComposerHookKey('providers', []);
+    }
+
+    public function getComposerHookKey($key, $default = null)
+    {
+        if (is_null($this->composerJson)) {
+            $this->loadComposerJson();
+        }
+
+        if (!isset($this->composerJson['extra'])) {
+            return $default;
+        }
+
+        if (!isset($this->composerJson['extra']['hook'])) {
+            return $default;
+        }
+
+        if (!isset($this->composerJson['extra']['hook'][$key])) {
+            return $default;
+        }
+
+        return $this->composerJson['extra']['hook'][$key];
+    }
+
+    public function getAliases()
+    {
+        return $this->getComposerHookKey('aliases', []);
+    }
+
+    public function loadComposerJson()
+    {
+        $this->composerJson = json_decode($this->getComposerJsonFile(), true);
+    }
+
+    public function getComposerJsonFile()
+    {
+        $path = 'vendor/'.$this->name;
+        
+        if ($this->isLocal()) {
+            $path = 'hooks/'.$this->name;
+        }
+
+        return app(Filesystem::class)->get(base_path($path.'/composer.json'));
+    }
+
+    public function setLatest($latest)
+    {
+        $this->latest = $latest;
     }
 
     public function loadJson($path = null)
@@ -41,24 +95,13 @@ class Hook implements ArrayAccess, Arrayable
         }
     }
 
-    public function scripts($event)
+    public function outdated()
     {
-        if (isset($this->scripts[$event])) {
-            return $this->scripts[$event];
+        if (is_null($this->latest)) {
+            $this->latest = app('hooks')->outdated($hook);
         }
 
-        return [];
-    }
-
-    public function hasUpdateAvailable()
-    {
-        $remoteVersion = $this->getRemoteVersionAttribute();
-
-        if (is_null($remoteVersion)) {
-            return false;
-        }
-
-        return $remoteVersion != $this->version;
+        return $this->latest != $this->version;
     }
 
     public function mergeWithJson($path)
@@ -94,13 +137,6 @@ class Hook implements ArrayAccess, Arrayable
         }
 
         return $this->$key;
-    }
-
-    public function getRemoteVersionAttribute()
-    {
-        if (isset($this->remote['version'])) {
-            return $this->remote['version'];
-        }
     }
 
     public function offsetExists($offset)
@@ -139,15 +175,17 @@ class Hook implements ArrayAccess, Arrayable
             'name'        => $this->name,
             'description' => $this->description,
             'version'     => $this->version,
-            'type'        => $this->type,
             'enabled'     => (bool) $this->enabled,
-            'scripts'     => (array) $this->scripts,
-            'remote'      => (array) $this->remote,
         ];
     }
 
     public function __toArray()
     {
         return $this->toArray();
+    }
+
+    public function isLocal()
+    {
+        return app(Filesystem::class)->isDirectory(base_path("hooks/{$this->name}"));
     }
 }

@@ -4,10 +4,8 @@ namespace Larapack\Hooks;
 
 use Carbon\Carbon;
 use Composer\XdebugHandler;
-
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 
 class Hooks
@@ -17,80 +15,137 @@ class Hooks
     protected $filesystem;
     protected $hooks;
     protected $lastRemoteCheck;
+    protected $outdated = [];
 
     protected $composer;
     protected $composerOutput;
 
-    protected static $scriptVariables = [];
+    protected static $memoryLimit = null;
+    protected static $memoryLimitSet = false;
+
+    protected static $useVersionWildcardOnUpdate = false;
+    protected static $versionWildcard = '*';
+    protected static $localVersion = 'dev-master';
 
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
         $this->prepareComposer();
+        $this->readOutdated();
         $this->readJsonFile();
 
         $this->composerJson = new Composer(base_path('composer.json'));
+
+        // Create output for XdebugHandler and Application
+        $output = new RawOutput();
+        $xdebug = new XdebugHandler($output);
+        $xdebug->check();
+        $this->composerOutput[] = $output;
+
+        $this->prepareMemoryLimit();
+    }
+
+    public static function setUseVersionWildcardOnUpdate($boolean)
+    {
+        static::$useVersionWildcardOnUpdate = $boolean;
+    }
+
+    public static function useVersionWildcardOnUpdate($boolean = true)
+    {
+        static::setUseVersionWildcardOnUpdate($boolean);
+    }
+
+    public static function enableVersionWildcardOnUpdate()
+    {
+        static::setUseVersionWildcardOnUpdate(true);
+    }
+
+    public static function disableVersionWildcardOnUpdate()
+    {
+        static::setUseVersionWildcardOnUpdate(false);
+    }
+
+    public static function getUseVersionWildcardOnUpdate()
+    {
+        return static::$useVersionWildcardOnUpdate;
+    }
+
+    public function readOutdated()
+    {
+        $file = base_path("hooks/outdated.json");
+
+        if ($this->filesystem->exists($file)) {
+            $this->outdated = json_decode($this->filesystem->get($file), true);
+        }
+    }
+
+    protected function memoryInBytes($value) {
+        $unit = strtolower(substr($value, -1, 1));
+        $value = (int) $value;
+
+        switch ($unit) {
+            case 'g':
+                $value *= 1024;
+                // no break (cumulative multiplier)
+            case 'm':
+                $value *= 1024;
+                // no break (cumulative multiplier)
+            case 'k':
+                $value *= 1024;
+        }
+
+        return $value;
+    }
+
+    public static function setMemoryLimit($memoryLimit)
+    {
+        static::$memoryLimit = $memoryLimit;
+
+        if (static::$memoryLimitSet) {
+            app(static::class)->prepareMemoryLimit();
+        }
+    }
+
+    public static function getMemoryLimit()
+    {
+        return static::$memoryLimit;
+    }
+
+    public function prepareMemoryLimit()
+    {
+        if (!function_exists('ini_set')) {
+            return;
+        }
+        
+        $memoryLimit = ini_get('memory_limit');
+
+        // Increase memory_limit if it is lower than 1.5GB
+        if ($memoryLimit != -1 && $this->memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
+            $memoryLimit = '1536M';
+        }
+
+        // Increaes memory_limit if it is lower than the application requirement
+        if (!is_null(static::$memoryLimit) && $this->memoryInBytes($memoryLimit) < $this->memoryInBytes(static::$memoryLimit)) {
+            $memoryLimit = static::$memoryLimit;
+        }
+
+        // Set if not -1
+        if (static::$memoryLimit != -1) {
+            @ini_set('memory_limit', $memoryLimit);
+        }
+        
+        static::$memoryLimitSet = true;
     }
 
     public function prepareComposer()
     {
-        if (PHP_SAPI !== 'cli') {
-            echo 'Warning: Composer should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
-        }
-
-        error_reporting(-1);
-
-        // Create output for XdebugHandler and Application
-        $this->composerOutput = new RawOutput();
-        $xdebug = new XdebugHandler($this->composerOutput);
-        $xdebug->check();
-        unset($xdebug);
-
-        if (function_exists('ini_set')) {
-            @ini_set('display_errors', 1);
-            $memoryInBytes = function ($value) {
-                $unit = strtolower(substr($value, -1, 1));
-                $value = (int) $value;
-                switch ($unit) {
-                    case 'g':
-                        $value *= 1024;
-                        // no break (cumulative multiplier)
-                    case 'm':
-                        $value *= 1024;
-                        // no break (cumulative multiplier)
-                    case 'k':
-                        $value *= 1024;
-                }
-
-                return $value;
-            };
-            $memoryLimit = trim(ini_get('memory_limit'));
-            // Increase memory_limit if it is lower than 1.5GB
-            if ($memoryLimit != -1 && $memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
-                @ini_set('memory_limit', '1536M');
-            }
-            unset($memoryInBytes, $memoryLimit);
-        }
-
         // Set environment
         putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
-        //putenv('COMPOSER='.realpath(base_path('composer.json')));
 
         // Prepare Composer Application instance
         $this->composer = new \Composer\Console\Application();
         $this->composer->setAutoExit(false);
         $this->composer->setCatchExceptions(false);
-    }
-
-    /**
-     * Create script value.
-     *
-     * @param string $key
-     * @param mixed  $value
-     */
-    public static function addScriptVariable($key, $value)
-    {
-        static::$scriptVariables[$key] = $value;
     }
 
     /**
@@ -144,61 +199,26 @@ class Hooks
             $this->prepareLocalInstallation($name);
 
             if (is_null($version)) {
-                $version = 'dev-master';
+                $version = static::$localVersion;
             }
         }
 
         // Require hook
         if (is_null($version)) {
-            $this->composerRequire([$name]);
+            $this->composerRequire([$name]); // TODO: Save Composer output somewhere
         } else {
-            $this->composerRequire([$name.':'.$version]);
+            $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
         }
-
-        $this->readJsonFile();
-
-        /*
-        // download hook if not local
-        if (!$this->downloaded($name)) {
-            // Get remote details
-            $remote = $this->getRemoteDetails($name);
-
-            // Download hook.
-            $this->download($remote, $version);
-        }
-
-        // Add this hook to JSON
-        if (isset($remote)) {
-            $data = $this->makeHookData($remote['type'], $remote);
-
-            if (is_null($version)) {
-                $version = $remote['version'];
-            }
-        } else {
-            $data = $this->makeHookData('local', [
-                'name' => $name,
-            ]);
-        }
-
-        if (!is_null($version)) {
-            $data = array_merge(['version' => $version], $data);
-        }
-
-        // Add data to json
-        $hook = new Hook($data);
-        $hook->update(['version' => $version]);
-        $this->hooks[$name] = $hook;
-        $this->remakeJson();
-
-        $this->dumpAutoload();
-        */
-
-        // TODO: Move to Composer Plugin
-        // Run install scripts
-        //$this->runScripts($name, 'install');
+        // TODO: Handle the case when Composer outputs: 
+        // Your requirements could not be resolved to an installable set of packages.
+        //
+        //      Problem 1
+        //        - The requested package composer-github-hook v0.0.1 exists as composer-github-hook[dev-master]
+        //          but these are rejected by your constraint.
 
         // TODO: Move to Composer Plugin
         $this->readJsonFile();
+
         event(new Events\InstalledHook($this->hooks[$name]));
     }
 
@@ -241,7 +261,7 @@ class Hooks
             event(new Events\DisabledHook($hook));
         }
 
-        $this->runScripts($name, 'uninstall');
+        // TODO: Run scripts for uninstall
 
         $hooks = $this->hooks()->where('name', '!=', $name);
         $this->hooks = $hooks;
@@ -278,41 +298,40 @@ class Hooks
             throw new Exceptions\HookNotInstalledException("Hook [{$name}] not installed.");
         }
 
-        $remote = $this->getRemoteDetails($name);
+        event(new Events\UpdatingHook($this->hooks[$name]));
 
         if (is_null($version)) {
-            $version = $remote['version'];
+            if (static::$useVersionWildcardOnUpdate) {
+                $version = static::$versionWildcard;
+            }
+
+            // Prepare a repository if the hook is located locally
+            if ($this->local($name)) {
+                $version = static::$localVersion;
+            }
         }
 
-        $hook = $this->hook($name);
-
-        $hook->loadJson();
-
-        if ($version == $hook->version) {
-            return false;
+        // Require hook
+        if (is_null($version)) {
+            $this->composerRequire([$name]); // TODO: Save Composer output somewhere
+        } else {
+            $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
         }
 
-        event(new Events\UpdatingHook($hook));
+        // TODO: Handle the case when Composer outputs: 
+        // Your requirements could not be resolved to an installable set of packages.
+        //
+        //      Problem 1
+        //        - The requested package composer-github-hook v0.0.1 exists as composer-github-hook[dev-master]
+        //          but these are rejected by your constraint.
 
-        // Download hook.
-        $this->download($remote, $version, true);
-
-        // Update json
-        $data = $this->makeHookData($remote['type'], $remote);
-
-        if (!is_null($version)) {
-            $data = array_merge(['version' => $version], $data);
-        }
-
-        $hook = new Hook($data);
-        $hook->update(['version' => $version]);
-        $this->hooks[$name] = $hook;
-
+        // TODO: Move to Composer Plugin
+        $this->readJsonFile();
         $this->remakeJson();
 
-        $this->runScripts($name, 'update');
+        // TODO: Run scripts for update
 
-        event(new Events\UpdatedHook($hook));
+        event(new Events\UpdatedHook($this->hooks[$name]));
 
         return true;
     }
@@ -347,7 +366,7 @@ class Hooks
 
         event(new Events\EnablingHook($hook));
 
-        $this->runScripts($name, 'enable');
+        // TODO: Run scripts for enable
 
         $this->hooks[$name]->update(['enabled' => true]);
 
@@ -386,7 +405,7 @@ class Hooks
 
         event(new Events\DisablingHook($hook));
 
-        $this->runScripts($name, 'disable');
+        // TODO: Run scripts for disable
 
         $this->hooks[$name]->update(['enabled' => false]);
 
@@ -418,13 +437,6 @@ class Hooks
 
         // Create folder for the new hook
         $this->filesystem->makeDirectory(base_path("hooks/{$name}"));
-
-        // Make hook data
-        /*
-        $data = $this->makeHookData('local', [
-            'name' => $name,
-        ]);
-        */
 
         // make stub files
         /*
@@ -505,6 +517,20 @@ class Hooks
     {
         return $this->filesystem->isDirectory(base_path("hooks/{$name}"))
             || $this->filesystem->isDirectory(base_path("vendor/{$name}"));
+    }
+
+    /**
+     * Get the latest version number of a hook if outdated
+     *
+     * @param $name
+     *
+     * @return string|null
+     */
+    public function outdated($name)
+    {
+        if (isset($this->outdated[$name])) {
+            return $this->outdated[$name];
+        }
     }
 
     /**
@@ -590,73 +616,6 @@ class Hooks
     }
 
     /**
-     * Run scripts from hook.
-     *
-     * @param $name
-     * @param array|string $events
-     *
-     * @return array
-     */
-    public function runScripts($name, $events)
-    {
-        $output = [];
-
-        if (!is_array($events)) {
-            $events = [$events];
-        }
-
-        $hook = $this->hook($name);
-        $hook->loadJson();
-
-        foreach ($events as $event) {
-            foreach ($hook->scripts($event) as $script) {
-                $script = $this->prepareScript($script);
-
-                $process = new Process($script);
-                $process->setWorkingDirectory(base_path())->run();
-
-                if (!$process->isSuccessful()) {
-                    throw new ProcessFailedException($process);
-                }
-
-                $output[] = $process->getOutput();
-            }
-        }
-
-        return $output;
-    }
-
-    public function prepareScript($script)
-    {
-        foreach (static::$scriptVariables as $key => $value) {
-            $script = str_replace('{'.$key.'}', $value, $script);
-        }
-
-        return $script;
-    }
-
-    /**
-     * Make hook data for the type.
-     *
-     * @param $type
-     * @param array $parameters
-     *
-     * @return mixed
-     */
-    public function makeHookData($type, array $parameters = [])
-    {
-        $method = 'make'.ucfirst(camel_case($type)).'HookData';
-
-        if (!method_exists($this, $method)) {
-            $method = 'makeDefaultHookData';
-        }
-
-        $parameters['type'] = $type;
-
-        return app()->call([$this, $method], $parameters);
-    }
-
-    /**
      * Make default hook data.
      *
      * @param $name
@@ -703,9 +662,11 @@ class Hooks
         }
 
         foreach ($this->readComposerHooks() as $name => $composerHook) {
-            if (!isset($hooks[$name])) {
-                $hooks[$name] = $composerHook;
-            }
+            $hooks[$name] = $composerHook;
+        }
+
+        foreach ($this->readLocalHooks() as $name => $composerHook) {
+            $hooks[$name] = $composerHook;
         }
 
         $this->hooks = collect($hooks);
@@ -726,6 +687,21 @@ class Hooks
         foreach (array_get($composer, 'packages', []) as $package) {
             if (array_get($package, 'notification-url') == static::$remote.'/downloads') {
                 $hooks[$package['name']] = new Hook($package);
+            }
+        }
+
+        return $hooks;
+    }
+
+    public function readLocalHooks()
+    {
+        $hooks = [];
+        $directories = array_except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
+        foreach ($directories as $directory) {
+            $composer = json_decode($this->filesystem->get($directory.'/composer.json'), true);
+
+            if (!is_null($composer) && isset($composer['name'])) {
+                $hooks[$composer['name']] = new Hook($composer);
             }
         }
 
@@ -758,45 +734,48 @@ class Hooks
         $input = new ArrayInput(array_merge([
             '--working-dir' => base_path('/'),
         ], $input));
-        $this->composer->run($input, $this->composerOutput);
 
-        return $this->composerOutput->output();
+        $this->composer->run($input, $output = new RawOutput);
+
+        $this->composerOutput[] = $output;
+
+        return $output->output();
     }
 
-    /*
-     * Get the composer command for the environment.
-     *
-     * @return string
-     */
-    /*
-    protected function findComposer()
+    public function checkForUpdates()
     {
-        if (file_exists(getcwd().'/composer.phar')) {
-            return '"'.PHP_BINARY.'" '.getcwd().'/composer.phar';
+        $output = $this->runComposer([
+            'command'  => 'outdated',
+            '--format' => 'json',
+        ]);
+
+        $outdated = [];
+        $hooks = [];
+        $results = json_decode($output, true);
+
+        foreach (array_get($results, 'installed', []) as $package) {
+            if (isset($this->hooks[array_get($package, 'name')])) {
+                $outdated[$package['name']] = $package['latest'];
+                $hook = $this->hooks[$package['name']];
+                $hook->setLatest($package['latest']);
+                $hooks[] = $hook;
+            }
         }
 
-        return 'composer';
+        $this->filesystem->put(
+            base_path('hooks/outdated.json'),
+            json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+
+        $this->lastRemoteCheck = Carbon::now();
+
+        $this->remakeJson();
+
+        return collect($hooks);
     }
-    */
-
-    /*
-     * Dumps composer autoload.
-     */
-    /*
-    public function dumpAutoload()
-    {
-        $composer = $this->findComposer();
-
-        $process = new Process($composer.' dump-autoload');
-        $process->setWorkingDirectory(base_path())->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-    }
-    */
 }
 
+// TODO: MOVE!
 class RawOutput extends \Symfony\Component\Console\Output\Output
 {
     protected $content;

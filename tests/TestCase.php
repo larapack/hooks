@@ -22,24 +22,56 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
+        $filesystem = app(Filesystem::class);
+
         // Cleanup old hooks before testing
-        app(Filesystem::class)->deleteDirectory(base_path('hooks'));
+        $filesystem->deleteDirectory(base_path('hooks'));
 
         // Clear old hooks
         $hook = app(Hooks::class);
         $hook->readJsonFile();
 
         // Delete testbench's fixures tests folder
-        app(Filesystem::class)->deleteDirectory(base_path('tests'));
+        $filesystem->deleteDirectory(base_path('tests'));
 
         // Create tests folder
-        app(Filesystem::class)->makeDirectory(base_path('tests'));
+        $filesystem->makeDirectory(base_path('tests'));
         file_put_contents(base_path('tests/TestCase.php'), '<?php ');
 
         // Remove repository section from composer file.
         $composer = new Composer(base_path('composer.json'));
         $composer->unset('repositories');
         $composer->save();
+
+        // Remove the minimum stability.
+        $composer->unset('minimum-stability');
+        $composer->save();
+
+        // Cleanup Composer
+        $composer = json_decode($filesystem->get(base_path('composer.json')), true);
+        $composer['require'] = [
+            'laravel/framework' => $composer['require']['laravel/framework'],
+        ];
+        if (isset($composer['repositories'])) {
+            unset($composer['repositories']);
+        }
+        if (isset($composer['minimum-stability'])) {
+            unset($composer['minimum-stability']);
+        }
+        $filesystem->put(base_path('composer.json'), json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        $filesystem->delete(base_path('composer.lock'));
+
+        // Cleanup vendor
+        $filesystem->deleteDirectory(base_path('vendor'));
+        $filesystem->makeDirectory(base_path('vendor'));
+
+        // Setup Hook repository
+        $this->artisan('hook:setup', [
+            '--url' => env('HOOKS_COMPOSER_REPOSITORY', static::COMPOSER_REPOSITORY),
+        ]);
+
+        // Reload JSON files
+        app(Hooks::class)->readJsonFile();
     }
 
     public function tearDown()
@@ -66,41 +98,5 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'database' => ':memory:',
             'prefix'   => '',
         ]);
-    }
-
-    /**
-     * Get the composer command for the environment.
-     *
-     * @return string
-     */
-    protected function findComposer()
-    {
-        if (file_exists(getcwd().'/composer.phar')) {
-            return '"'.PHP_BINARY.'" '.getcwd().'/composer.phar';
-        }
-
-        return 'composer';
-    }
-
-    public function runComposerCommand($command)
-    {
-        $composer = $this->findComposer();
-
-        $process = new Process($composer.' '.$command);
-        $process->setWorkingDirectory(base_path())->run();
-
-        if (!$process->isSuccessful()) {
-            throw new ProcessFailedException($process);
-        }
-
-        return $process;
-    }
-}
-
-class PreparedHook
-{
-    public function __construct($data)
-    {
-        $this->data = $data;
     }
 }

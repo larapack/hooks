@@ -8,38 +8,16 @@ use Larapack\Hooks\Hooks;
 
 class HooksTest extends TestCase
 {
-    const COMPOSER_REPOSITORY = 'http://larapack.dev';
-    //const COMPOSER_REPOSITORY = 'https://testing.larapack.io';
+    const COMPOSER_REPOSITORY = 'https://testing.larapack.io';
 
     public function setUp()
     {
-        parent::setUp();
-
+        // Set Hooks environment
+        Hooks::setMemoryLimit('5G');
         Hooks::setRemote(static::COMPOSER_REPOSITORY);
 
-        print_r("\nSETUP!\n");
-
-        $filesystem = app(Filesystem::class);
-
-        // Cleanup Composer
-        $composer = json_decode($filesystem->get(base_path('composer.json')), true);
-        $composer['require'] = [
-            'laravel/framework' => $composer['require']['laravel/framework'],
-        ];
-        $filesystem->put(base_path('composer.json'), json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-        $filesystem->delete(base_path('composer.lock'));
-
-        // Cleanup vendor
-        $filesystem->deleteDirectory(base_path('vendor'));
-        $filesystem->makeDirectory(base_path('vendor'));
-
-        // Setup Hook repository
-        $this->artisan('hook:setup', [
-            '--url' => env('HOOKS_COMPOSER_REPOSITORY', static::COMPOSER_REPOSITORY),
-        ]);
-
-        // Reload JSON files
-        app(Hooks::class)->readJsonFile();
+        // Setup parent
+        parent::setUp();
     }
 
     public function test_repository_set()
@@ -76,14 +54,15 @@ class HooksTest extends TestCase
         $hook = app('hooks')->hook('composer-github-hook');
         $expect = [
             'name'        => 'composer-github-hook',
-            'version'     => 'dev-master', //'v0.0.2',// TODO: !!!
+            'version'     => 'v1.0.1',
             'description' => 'This is a hook',
-            //'type'        => 'github', // TODO: !!!
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertFalse($hook->isLocal());
     }
 
     public function test_install_hook_from_github_with_enable_option()
@@ -136,12 +115,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
     }
 
     public function test_enabling_hook()
@@ -174,12 +154,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
 
         // Enable hook
         $this->artisan('hook:enable', [
@@ -192,12 +173,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => true,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
     }
 
     public function test_disabling_hook()
@@ -230,12 +212,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
 
         // Enable hook
         $this->artisan('hook:enable', [
@@ -248,12 +231,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => true,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
 
         // Disable hook
         $this->artisan('hook:disable', [
@@ -266,12 +250,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
     }
 
     public function test_uninstall_hook()
@@ -304,12 +289,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
@@ -351,12 +337,13 @@ class HooksTest extends TestCase
             'name'        => 'local-test-hook',
             'version'     => null,
             'description' => 'This is a hook.',
-            'type'        => 'local',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
+
+        $this->assertTrue($hook->isLocal());
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
@@ -374,106 +361,44 @@ class HooksTest extends TestCase
         // Install hook
         $this->artisan('hook:install', [
             'name'    => 'composer-github-hook',
-            'version' => 'v0.0.1',
+            'version' => 'v1.0.0',
         ]);
 
         // Check that hooks folder does exists
         $this->assertTrue($filesystem->isDirectory(base_path('hooks')));
 
         // Check that the hook folder exists
-        $this->assertTrue($filesystem->isDirectory(base_path('hooks/composer-github-hook')));
+        $this->assertTrue($filesystem->isDirectory(base_path('vendor/composer-github-hook')));
 
         // Check that the hook details is correct
         $hook = app('hooks')->hook('composer-github-hook');
         $expect = [
             'name'        => 'composer-github-hook',
-            'version'     => 'v0.0.1',
-            'description' => 'This is a hook.',
-            'type'        => 'github',
+            'version'     => 'v1.0.0',
+            'description' => 'This is a hook',
             'enabled'     => false,
         ];
         foreach ($expect as $key => $value) {
             $this->assertEquals($value, $hook->$key);
         }
 
+        $this->assertFalse($hook->isLocal());
+
         // Check that version is correct
-        $this->assertEquals('v0.0.1', trim($filesystem->get(base_path('hooks/composer-github-hook/version'))));
-    }
-
-    public function test_hook_scripts_are_called()
-    {
-        $filesystem = app(Filesystem::class);
-
-        // check install log does not already exists.
-        $this->assertFalse($filesystem->exists(base_path('hooks/composer-github-hook/scripts/install.log')));
-
-        // Install hook
-        $this->artisan('hook:install', [
-            'name'    => 'composer-github-hook',
-            'version' => 'v0.0.1',
-        ]);
-
-        // Check that install scripts where runned on the hook
-        $this->assertTrue($filesystem->exists(base_path('hooks/composer-github-hook/scripts/install.log')));
-        $this->assertEquals('installed', $filesystem->get(base_path('hooks/composer-github-hook/scripts/install.log')));
-
-        // check update log does not already exists.
-        $this->assertFalse($filesystem->exists(base_path('hooks/composer-github-hook/scripts/update.log')));
-
-        // Update hook
-        $this->artisan('hook:update', [
-            'name' => 'composer-github-hook',
-        ]);
-
-        // Check that update scripts where runned on the hook
-        $this->assertTrue($filesystem->exists(base_path('hooks/composer-github-hook/scripts/update.log')));
-        $this->assertEquals('updated', $filesystem->get(base_path('hooks/composer-github-hook/scripts/update.log')));
-
-        // check enable log does not already exists.
-        $this->assertFalse($filesystem->exists(base_path('hooks/composer-github-hook/scripts/enable.log')));
-
-        // Enable hook
-        $this->artisan('hook:enable', [
-            'name' => 'composer-github-hook',
-        ]);
-
-        // Check that enable scripts where runned on the hook
-        $this->assertTrue($filesystem->exists(base_path('hooks/composer-github-hook/scripts/enable.log')));
-        $this->assertEquals('enabled', $filesystem->get(base_path('hooks/composer-github-hook/scripts/enable.log')));
-
-        // check disable log does not already exists.
-        $this->assertFalse($filesystem->exists(base_path('hooks/composer-github-hook/scripts/disable.log')));
-
-        // Disable hook
-        $this->artisan('hook:disable', [
-            'name' => 'composer-github-hook',
-        ]);
-
-        // Check that disable scripts where runned on the hook
-        $this->assertTrue($filesystem->exists(base_path('hooks/composer-github-hook/scripts/disable.log')));
-        $this->assertEquals('disabled', $filesystem->get(base_path('hooks/composer-github-hook/scripts/disable.log')));
-
-        // check uninstall log does not already exists.
-        $this->assertFalse($filesystem->exists(base_path('hooks/composer-github-hook/scripts/uninstall.log')));
-
-        // Uninstall hook
-        $this->artisan('hook:uninstall', [
-            'name'   => 'composer-github-hook',
-            '--keep' => true,
-        ]);
-
-        // Check that uninstall scripts where runned on the hook
-        $this->assertTrue($filesystem->exists(base_path('hooks/composer-github-hook/scripts/enable.log')));
-        $this->assertEquals('enabled', $filesystem->get(base_path('hooks/composer-github-hook/scripts/enable.log')));
+        $this->assertEquals('v1.0.0', trim($filesystem->get(base_path('vendor/composer-github-hook/version'))));
     }
 
     public function test_update_hook()
     {
+        $filesystem = app(Filesystem::class);
+
         // Install hook
         $this->artisan('hook:install', [
             'name'    => 'composer-github-hook',
-            'version' => 'v0.0.1',
+            'version' => 'v1.0.0',
         ]);
+
+        Hooks::useVersionWildcardOnUpdate();
 
         // Update hook
         $this->artisan('hook:update', [
@@ -482,7 +407,7 @@ class HooksTest extends TestCase
 
         // Check version is correct
         $hook = app('hooks')->hook('composer-github-hook');
-        $this->assertEquals('v0.0.2', $hook->version);
+        $this->assertEquals('v1.0.1', $hook->version);
     }
 
     public function test_updating_to_specific_version()
@@ -490,18 +415,18 @@ class HooksTest extends TestCase
         // Install hook
         $this->artisan('hook:install', [
             'name'    => 'composer-github-hook',
-            'version' => 'v0.0.1',
+            'version' => 'v1.0.0',
         ]);
 
         // Update hook
         $this->artisan('hook:update', [
             'name'    => 'composer-github-hook',
-            'version' => 'master',
+            'version' => 'v1.0.1',
         ]);
 
         // Check version is correct
         $hook = app('hooks')->hook('composer-github-hook');
-        $this->assertEquals('master', $hook->version);
+        $this->assertEquals('v1.0.1', $hook->version);
     }
 
     public function test_checking_hooks_for_updates()
@@ -509,15 +434,160 @@ class HooksTest extends TestCase
         // Install hook
         $this->artisan('hook:install', [
             'name'    => 'composer-github-hook',
-            'version' => 'v0.0.1',
+            'version' => 'v1.0.0',
         ]);
 
         $this->artisan('hook:check');
 
         $hooks = app('hooks')->hooks()->filter(function (Hook $hook) {
-            return $hook->hasUpdateAvailable();
+            return $hook->outdated();
         });
 
         $this->assertCount(1, $hooks);
     }
+
+    public function test_provider_is_loaded_when_enabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name'     => 'composer-github-hook',
+            '--enable' => true,
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertTrue($hook->enabled);
+
+        // Reload autoload
+        include base_path('vendor/autoload.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Check if service provider has run
+        $this->assertTrue(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isBooted);
+        $this->assertTrue(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isRegistered);
+    }
+
+    public function test_provider_is_not_loaded_when_diabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertFalse($hook->enabled);
+
+        // Reload autoload
+        include base_path('vendor/autoload.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Check if service provider has run
+        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isBooted);
+        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isRegistered);
+    }
+
+    public function test_alias_is_loaded_when_enabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name'     => 'composer-github-hook',
+            '--enable' => true,
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertTrue($hook->enabled);
+
+        // Reload autoload
+        include base_path('vendor/autoload.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Test if alias exists and works
+        $this->assertTrue(class_exists(\Test::class));
+        $this->assertEquals('bar', \Test::foo());
+    }
+
+    public function test_alias_is_not_loaded_when_disabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertFalse($hook->enabled);
+
+        // Reload autoload
+        include base_path('vendor/autoload.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Test if alias exists
+        $this->assertFalse(class_exists(\Test::class));
+    }
+
+    public function test_dependencies_are_downloaded()
+    {
+        $filesystem = app(Filesystem::class);
+
+        // Make sure dependency not already exists
+        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+
+        // Install hook
+        $this->artisan('hook:install', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Make sure dependency is now downloaded
+        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+    }
+
+    public function test_updating_updates_dependencies()
+    {
+        $filesystem = app(Filesystem::class);
+
+        // Make sure dependency not already exists
+        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+
+        // Install hook
+        $this->artisan('hook:install', [
+            'name'    => 'composer-github-hook',
+            'version' => 'v1.0.0',
+        ]);
+
+        // Make sure dependency is now downloaded
+        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+        $this->assertFalse($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+
+        Hooks::useVersionWildcardOnUpdate();
+
+        // Update hook
+        $this->artisan('hook:update', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Make sure dependency is now downloaded
+        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-1')));
+        $this->assertTrue($filesystem->isDirectory(base_path('vendor/marktopper/composer-hook-dependency-2')));
+    }
+
+    // TODO: Test that if a hook requires another hook, that hook should be loaded as well
 }
