@@ -18,7 +18,8 @@
         "composer/composer": "~1.4"
     },
     "require-dev": {
-        "orchestra/testbench": "~3.0"
+        "orchestra/testbench": "~3.0",
+        "phpunit/phpunit": "^6.2"
     },
     "autoload": {
         "psr-4": {
