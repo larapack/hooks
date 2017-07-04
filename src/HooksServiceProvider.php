@@ -2,8 +2,8 @@
 
 namespace Larapack\Hooks;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Foundation\AliasLoader;
+use Illuminate\Support\ServiceProvider;
 
 class HooksServiceProvider extends ServiceProvider
 {
