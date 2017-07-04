@@ -2,6 +2,7 @@
 
 namespace Larapack\Hooks;
 
+use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
 class HooksServiceProvider extends ServiceProvider
@@ -13,40 +14,15 @@ class HooksServiceProvider extends ServiceProvider
     {
         // Registers resources and commands
         if ($this->app->runningInConsole()) {
-            $this->registerPublishableResources();
             $this->registerCommands();
         }
-
-        // Load default configurations
-        $this->mergeConfigFrom(
-            dirname(__DIR__).'/publishable/config/hooks.php', 'hooks'
-        );
 
         // Register Hooks system and aliases
         $this->app->singleton(Hooks::class, Hooks::class);
         $this->app->alias(Hooks::class, 'hooks');
 
-        // Register script variables
-        $this->registerScriptVariables();
-
-        // Register downloaders
-        $this->app->bind('hooks.downloaders.github', Downloaders\GithubDownloader::class);
-
         // Register hook providers
         $this->registerHookProviders();
-    }
-
-    /**
-     * Register Hook Script Variables.
-     */
-    protected function registerScriptVariables()
-    {
-        $scriptVariables = [
-            'HOOKS' => base_path('hooks'),
-        ];
-        foreach ($scriptVariables as $key => $value) {
-            Hooks::addScriptVariable($key, $value);
-        }
     }
 
     /**
@@ -56,17 +32,17 @@ class HooksServiceProvider extends ServiceProvider
     {
         // load only the enabled hooks
         $hooks = app('hooks')->hooks()->where('enabled', true);
+        $loader = AliasLoader::getInstance();
 
-        // load providers
         foreach ($hooks as $hook) {
-            if (isset($hook['provider'])) {
-                $this->app->register($hook['provider']);
+            // load providers
+            foreach ($hook->getProviders() as $provider) {
+                $this->app->register($provider);
             }
 
-            if (isset($hook['providers'])) {
-                foreach ($hook['providers'] as $provider) {
-                    $this->app->register($provider);
-                }
+            // set aliases
+            foreach ($hook->getAliases() as $alias => $class) {
+                $loader->alias($alias, $class);
             }
         }
     }
@@ -84,6 +60,7 @@ class HooksServiceProvider extends ServiceProvider
      */
     protected function registerCommands()
     {
+        $this->commands(Commands\SetupCommand::class);
         $this->commands(Commands\MakeCommand::class);
         $this->commands(Commands\InstallCommand::class);
         $this->commands(Commands\UninstallCommand::class);
@@ -93,22 +70,5 @@ class HooksServiceProvider extends ServiceProvider
         $this->commands(Commands\DisableCommand::class);
         $this->commands(Commands\InfoCommand::class);
         $this->commands(Commands\ListCommand::class);
-    }
-
-    /**
-     * Register the publishable files.
-     */
-    private function registerPublishableResources()
-    {
-        $basePath = dirname(__DIR__);
-        $publishable = [
-            'config' => [
-                "$basePath/publishable/config/hooks.php" => config_path('hooks.php'),
-            ],
-        ];
-
-        foreach ($publishable as $group => $paths) {
-            $this->publishes($paths, $group);
-        }
     }
 }

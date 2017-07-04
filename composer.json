@@ -14,6 +14,9 @@
             "email": "mark@ulties.com"
         }
     ],
+    "require": {
+        "composer/composer": "~1.4"
+    },
     "require-dev": {
         "orchestra/testbench": "~3.0"
     },

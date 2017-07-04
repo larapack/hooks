@@ -29,7 +29,7 @@ class CheckCommand extends Command
         $this->info(($count == 1 ? '1 update' : $count.' updates').' available.');
 
         foreach ($hooks as $hook) {
-            $this->comment($hook->name.' '.$hook->remoteVersion);
+            $this->comment($hook->name.' '.$hook->version);
         }
     }
 }
