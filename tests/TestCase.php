@@ -41,7 +41,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $composer->set('repositories', []);
         $composer->set('minimum-stability', 'stable');
         $composer->set('require', [
-            'laravel/framework' => $composer->get('require.laravel/framework')
+            'laravel/framework' => $composer->get('require.laravel/framework'),
         ]);
         $composer->save();
         $filesystem->delete(base_path('composer.lock'));
