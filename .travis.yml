@@ -25,4 +25,4 @@ before_script:
   - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-dist
 
 script:
-  - vendor/bin/phpunit --stop-on-failure --debug
+  - vendor/bin/phpunit --debug --disable-coverage-ignore --verbose --colors=always --no-extensions --stop-on-error --stop-on-failure --stop-on-warning  --stop-on-risky --stop-on-skipped --stop-on-incomplete --fail-on-warning --fail-on-risky
