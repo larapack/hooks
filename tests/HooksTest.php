@@ -443,6 +443,54 @@ class HooksTest extends TestCase
         $this->assertCount(1, $hooks);
     }
 
+    public function test_provider_is_not_loaded_when_diabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertFalse($hook->enabled);
+
+        // Require files
+        require_once base_path('vendor/composer-github-hook/src/ComposerGithubHookServiceProvider.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Check if service provider has run
+        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isBooted);
+        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isRegistered);
+    }
+
+    public function test_alias_is_not_loaded_when_disabled()
+    {
+        // Install hook
+        $this->artisan('hook:install', [
+            'name' => 'composer-github-hook',
+        ]);
+
+        // Check that enabled
+        $hook = app('hooks')->hook('composer-github-hook');
+        $this->assertFalse($hook->enabled);
+
+        // Require files
+        require_once base_path('vendor/composer-github-hook/src/ComposerGithubHookServiceProvider.php');
+        require_once base_path('vendor/composer-github-hook/src/TestAlias.php');
+
+        // Reload service providers
+        app(\Larapack\Hooks\HooksServiceProvider::class, [
+            'app' => app(),
+        ])->registerHookProviders();
+
+        // Test if alias exists
+        $this->assertFalse(class_exists(\Test::class));
+    }
+
     public function test_provider_is_loaded_when_enabled()
     {
         // Install hook
@@ -455,8 +503,8 @@ class HooksTest extends TestCase
         $hook = app('hooks')->hook('composer-github-hook');
         $this->assertTrue($hook->enabled);
 
-        // Reload autoload
-        include base_path('vendor/autoload.php');
+        // Require files
+        require_once base_path('vendor/composer-github-hook/src/ComposerGithubHookServiceProvider.php');
 
         // Reload service providers
         app(\Larapack\Hooks\HooksServiceProvider::class, [
@@ -466,30 +514,6 @@ class HooksTest extends TestCase
         // Check if service provider has run
         $this->assertTrue(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isBooted);
         $this->assertTrue(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isRegistered);
-    }
-
-    public function test_provider_is_not_loaded_when_diabled()
-    {
-        // Install hook
-        $this->artisan('hook:install', [
-            'name' => 'composer-github-hook',
-        ]);
-
-        // Check that enabled
-        $hook = app('hooks')->hook('composer-github-hook');
-        $this->assertFalse($hook->enabled);
-
-        // Reload autoload
-        include base_path('vendor/autoload.php');
-
-        // Reload service providers
-        app(\Larapack\Hooks\HooksServiceProvider::class, [
-            'app' => app(),
-        ])->registerHookProviders();
-
-        // Check if service provider has run
-        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isBooted);
-        $this->assertFalse(\ComposerGithubHook\ComposerGithubHookServiceProvider::$isRegistered);
     }
 
     public function test_alias_is_loaded_when_enabled()
@@ -504,8 +528,9 @@ class HooksTest extends TestCase
         $hook = app('hooks')->hook('composer-github-hook');
         $this->assertTrue($hook->enabled);
 
-        // Reload autoload
-        include base_path('vendor/autoload.php');
+        // Require files
+        require_once base_path('vendor/composer-github-hook/src/ComposerGithubHookServiceProvider.php');
+        require_once base_path('vendor/composer-github-hook/src/TestAlias.php');
 
         // Reload service providers
         app(\Larapack\Hooks\HooksServiceProvider::class, [
@@ -515,29 +540,6 @@ class HooksTest extends TestCase
         // Test if alias exists and works
         $this->assertTrue(class_exists(\Test::class));
         $this->assertEquals('bar', \Test::foo());
-    }
-
-    public function test_alias_is_not_loaded_when_disabled()
-    {
-        // Install hook
-        $this->artisan('hook:install', [
-            'name' => 'composer-github-hook',
-        ]);
-
-        // Check that enabled
-        $hook = app('hooks')->hook('composer-github-hook');
-        $this->assertFalse($hook->enabled);
-
-        // Reload autoload
-        include base_path('vendor/autoload.php');
-
-        // Reload service providers
-        app(\Larapack\Hooks\HooksServiceProvider::class, [
-            'app' => app(),
-        ])->registerHookProviders();
-
-        // Test if alias exists
-        $this->assertFalse(class_exists(\Test::class));
     }
 
     public function test_dependencies_are_downloaded()
