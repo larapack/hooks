@@ -140,7 +140,7 @@ class Hooks
     public function prepareComposer()
     {
         // Set environment
-        putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
+        //putenv('COMPOSER_BINARY='.realpath($_SERVER['argv'][0]));
 
         // Prepare Composer Application instance
         $this->composer = new \Composer\Console\Application();
