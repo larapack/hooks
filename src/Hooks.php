@@ -113,6 +113,7 @@ class Hooks
 
     public function prepareMemoryLimit()
     {
+        return; // TEST
         if (!function_exists('ini_set')) {
             return;
         }
