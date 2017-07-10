@@ -7,14 +7,8 @@ php:
   - nightly
 
 matrix:
-  fast_finish: true
-
   allow_failures:
     - php: nightly
-
-cache:
-  directories:
-    - $HOME/.composer/cache
 
 services:
   - sqlite
@@ -25,4 +19,4 @@ before_script:
   - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction --prefer-dist
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --stop-on-failure
