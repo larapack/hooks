@@ -239,9 +239,9 @@ class Hooks
     }
 
     /**
-     * Prepare Hook Local Installation
+     * Prepare Hook Local Installation.
      *
-     * @param  string $name
+     * @param string $name
      *
      * @return void
      */
@@ -492,34 +492,8 @@ class Hooks
 
     /**
      * Download.
-                                                >>>>>>> origin/fetch-hooks-from-api-backup
+     >>>>>>> origin/fetch-hooks-from-api-backup
      * @throws \Larapack\Hooks\Exceptions\HookAlreadyExistsException
-    protected function download($remote, $version = null, $update = false)
-    {
-        $name = $remote['name'];
-
-        if ($this->local($name) && !$update) {
-            throw new Exceptions\HookAlreadyExistsException("Hook [{$name}] already exists.");
-        }
-
-        if (is_null($version) && isset($remote['version'])) {
-            $version = $remote['version'];
-        }
-
-        // Download hook
-        $downloader = app('hooks.downloaders.'.$remote['type']);
-        $downloader->download($remote, $version);
-
-        // Remove old hook
-        if ($this->filesystem->isDirectory(base_path("hooks/{$name}"))) {
-            $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
-        }
-
-        // Place new hook on hooks folder
-        $downloader->output(base_path("hooks/{$name}"));
-
-        $this->updateDownloadCount($name);
-    }
      */
 
     /**
@@ -545,7 +519,7 @@ class Hooks
     {
         return !$this->enabled($name);
 
-        /**
+        /*
          *                                      >>>>>>> origin/fetch-hooks-from-api-backup
         return isset($this->hooks[$name]) && $this->hooks[$name]->installed;
          */
@@ -805,7 +779,8 @@ class Hooks
 
     /**
      * Refresh cache file /hooks/hooks.json.
-     *                                        >>>>>>> origin/fetch-hooks-from-api-backup
+     *                                        >>>>>>> origin/fetch-hooks-from-api-backup.
+     *
      * @return void
      */
     public function refreshCache()
@@ -908,10 +883,10 @@ class Hooks
         return collect($hooks);
     }
 
-
     /**
      * Get local hooks listed on folder `/hooks`.
-     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     *                                         >>>>>>> origin/fetch-hooks-from-api-backup.
+     *
      * @return array
      */
     private function getLocalHooks()
@@ -925,7 +900,8 @@ class Hooks
 
     /**
      * Provision hooks requirements.
-     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     *                                         >>>>>>> origin/fetch-hooks-from-api-backup.
+     *
      * @return void
      */
     private function provision()
