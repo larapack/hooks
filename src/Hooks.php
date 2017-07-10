@@ -29,8 +29,12 @@ class Hooks
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
+
         $this->prepareComposer();
         $this->readOutdated();
+
+        $this->provision();
+
         $this->readJsonFile();
 
         $this->composerJson = new Composer(base_path('composer.json'));
@@ -219,9 +223,28 @@ class Hooks
         // TODO: Move to Composer Plugin
         $this->readJsonFile();
 
+        /*
+                                                >>>>>>> origin/fetch-hooks-from-api-backup
+
+        // Add data to json
+        $hook = new Hook($data);
+        $hook->update(['installed' => true]);
+
+        $this->hooks[$name] = $hook;
+
+        $this->remakeJson();
+        */
+
         event(new Events\InstalledHook($this->hooks[$name]));
     }
 
+    /**
+     * Prepare Hook Local Installation
+     *
+     * @param  string $name
+     *
+     * @return void
+     */
     public function prepareLocalInstallation($name)
     {
         $this->composerJson->addRepository($name, [
@@ -236,11 +259,11 @@ class Hooks
      * Uninstall a hook.
      *
      * @param $name
-     * @param $keep boolean
+     * @param $delete boolean
      *
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      */
-    public function uninstall($name, $keep = false)
+    public function uninstall($name, $delete = false)
     {
         // Check if installed
         if (!$this->installed($name)) {
@@ -263,14 +286,16 @@ class Hooks
 
         // TODO: Run scripts for uninstall
 
-        $hooks = $this->hooks()->where('name', '!=', $name);
-        $this->hooks = $hooks;
+        $hook->update([
+            'enabled'   => false,
+            'installed' => false,
+        ]);
 
         $this->remakeJson();
 
         event(new Events\UninstalledHook($name));
 
-        if (!$keep) {
+        if ($delete) {
             $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
         }
     }
@@ -430,11 +455,6 @@ class Hooks
 
         event(new Events\MakingHook($name));
 
-        // Ensure hooks folder exists
-        if (!$this->filesystem->isDirectory(base_path('hooks'))) {
-            $this->filesystem->makeDirectory(base_path('hooks'));
-        }
-
         // Create folder for the new hook
         $this->filesystem->makeDirectory(base_path("hooks/{$name}"));
 
@@ -471,6 +491,38 @@ class Hooks
     }
 
     /**
+     * Download.
+                                                >>>>>>> origin/fetch-hooks-from-api-backup
+     * @throws \Larapack\Hooks\Exceptions\HookAlreadyExistsException
+    protected function download($remote, $version = null, $update = false)
+    {
+        $name = $remote['name'];
+
+        if ($this->local($name) && !$update) {
+            throw new Exceptions\HookAlreadyExistsException("Hook [{$name}] already exists.");
+        }
+
+        if (is_null($version) && isset($remote['version'])) {
+            $version = $remote['version'];
+        }
+
+        // Download hook
+        $downloader = app('hooks.downloaders.'.$remote['type']);
+        $downloader->download($remote, $version);
+
+        // Remove old hook
+        if ($this->filesystem->isDirectory(base_path("hooks/{$name}"))) {
+            $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
+        }
+
+        // Place new hook on hooks folder
+        $downloader->output(base_path("hooks/{$name}"));
+
+        $this->updateDownloadCount($name);
+    }
+     */
+
+    /**
      * Check if hook is enabled.
      *
      * @param $name
@@ -492,6 +544,11 @@ class Hooks
     public function disabled($name)
     {
         return !$this->enabled($name);
+
+        /**
+         *                                      >>>>>>> origin/fetch-hooks-from-api-backup
+        return isset($this->hooks[$name]) && $this->hooks[$name]->installed;
+         */
     }
 
     /**
@@ -616,21 +673,44 @@ class Hooks
     }
 
     /**
+     * Make hook data for the type.
+     *
+     * @param $type
+     * @param array $parameters
+     *
+     * @return mixed
+     */
+    public function makeHookData($type, array $parameters = [])
+    {
+        $method = 'make'.ucfirst(camel_case($type)).'HookData';
+
+        if (!method_exists($this, $method)) {
+            $method = 'makeDefaultHookData';
+        }
+
+        $parameters['type'] = $type;
+
+        return app()->call([$this, $method], $parameters);
+    }
+
+    /**
      * Make default hook data.
      *
      * @param $name
      * @param $type
-     * @param bool $enable
+     * @param bool $enabled
+     * @param bool $installed
      *
      * @return array
      */
-    public function makeDefaultHookData($name, $type, $enable = false)
+    public function makeDefaultHookData($name, $type, $enabled = false, $installed = false)
     {
         return [
-            'name'    => $name,
-            'type'    => $type,
-            'version' => null,
-            'enabled' => $enable,
+            'name'      => $name,
+            'type'      => $type,
+            'version'   => null,
+            'enabled'   => $enabled,
+            'installed' => $installed,
         ];
     }
 
@@ -641,17 +721,11 @@ class Hooks
     {
         $hooks = [];
 
-        if (!$this->filesystem->exists(base_path('hooks'))) {
-            $this->filesystem->makeDirectory(base_path('hooks'));
-        }
-
-        if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
-            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
-        }
-
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
-        if (isset($data['hooks'])) {
+        if (!isset($data['hooks'])) {
+            $this->refreshCache();
+        } else {
             foreach ($data['hooks'] as $key => $hook) {
                 $hooks[$key] = new Hook($hook);
             }
@@ -729,6 +803,66 @@ class Hooks
         ]);
     }
 
+    /**
+     * Refresh cache file /hooks/hooks.json.
+     *                                        >>>>>>> origin/fetch-hooks-from-api-backup
+     * @return void
+     */
+    public function refreshCache()
+    {
+        $hooks = [];
+
+        $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+
+        $localHooks = $this->getLocalHooks();
+        $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
+
+        // If cache file exists, we need to get all enabled hooks
+        // and build cache from there.
+        if (isset($data['hooks'])) {
+            foreach ($data['hooks'] as $key => $hook) {
+                if ($hook['enabled']) {
+                    $hooks[$key] = new Hook($hook);
+                    if ($hook['type'] != 'local') {
+                        $hooks[$key]->remote = $this->getRemoteDetails($key);
+                    }
+                }
+            }
+
+            // Exclude enabled hooks from localHooks
+            $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
+                return !in_array($hook, array_keys($hooks));
+            });
+
+            // Exclude enabled hooks from remoteHooks
+            $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
+                return !in_array($hook['name'], array_keys($hooks));
+            });
+        }
+
+        // Merge local hooks
+        foreach ($localHooks as $hook) {
+            $hooks[$hook] = new Hook($this->makeDefaultHookData($hook, 'local'));
+        }
+
+        // Merge remote hooks
+        foreach ($remoteHooks as $hook) {
+            $_hook = $this->makeHookData($hook['type'], [
+                'name'        => $hook['name'],
+                'description' => $hook['description'],
+                'remote'      => $this->getRemoteDetails($hook['name']),
+            ]);
+
+            $hooks[$hook['name']] = new Hook($_hook);
+        }
+
+        $this->hooks = collect($hooks);
+
+        $this->lastRemoteCheck = Carbon::now();
+
+        $this->remakeJson();
+    }
+
     public function runComposer($input)
     {
         $input = new ArrayInput(array_merge([
@@ -772,6 +906,37 @@ class Hooks
         $this->remakeJson();
 
         return collect($hooks);
+    }
+
+
+    /**
+     * Get local hooks listed on folder `/hooks`.
+     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     * @return array
+     */
+    private function getLocalHooks()
+    {
+        $_hooks = $this->filesystem->directories(base_path('hooks'));
+
+        return array_map(function ($_hook) {
+            return substr($_hook, strrpos($_hook, '/') + 1);
+        }, $_hooks);
+    }
+
+    /**
+     * Provision hooks requirements.
+     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     * @return void
+     */
+    private function provision()
+    {
+        if (!$this->filesystem->exists(base_path('hooks'))) {
+            $this->filesystem->makeDirectory(base_path('hooks'));
+        }
+
+        if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
+            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
+        }
     }
 }
 
