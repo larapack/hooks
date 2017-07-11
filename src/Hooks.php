@@ -7,7 +7,7 @@ use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
 use Larapack\Hooks\Support\RawOutput;
-use Larapack\Hooks\MemoryManager;
+use Larapack\Hooks\Support\MemoryManager;
 
 class Hooks extends MemoryManager
 {
@@ -20,9 +20,6 @@ class Hooks extends MemoryManager
 
     protected $composer;
     protected $composerOutput;
-
-    // protected static $memoryLimit = null;
-    // protected static $memoryLimitSet = false;
 
     protected static $useVersionWildcardOnUpdate = false;
     protected static $versionWildcard = '*';

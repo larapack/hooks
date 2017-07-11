@@ -1,6 +1,6 @@
 <?php
 
-namespace Larapack\Hooks;
+namespace Larapack\Hooks\Support;
 
 abstract class MemoryManager
 {
