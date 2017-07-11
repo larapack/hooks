@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
+use Larapack\Hooks\Support\RawOutput;
 
 class Hooks
 {
@@ -33,7 +34,7 @@ class Hooks
         $this->prepareComposer();
         $this->readOutdated();
 
-        $this->provision();
+        $this->ensureCacheFile();
 
         $this->readJsonFile();
 
@@ -924,11 +925,11 @@ class Hooks
     }
 
     /**
-     * Provision hooks requirements.
-     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     * Ensure the folder and file exist for `/hooks/hooks.json`.
+     *
      * @return void
      */
-    private function provision()
+    private function ensureCacheFile()
     {
         if (!$this->filesystem->exists(base_path('hooks'))) {
             $this->filesystem->makeDirectory(base_path('hooks'));
@@ -937,25 +938,5 @@ class Hooks
         if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
             $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
         }
-    }
-}
-
-// TODO: MOVE!
-class RawOutput extends \Symfony\Component\Console\Output\Output
-{
-    protected $content;
-
-    public function doWrite($message, $newline)
-    {
-        $this->content .= $message;
-
-        if ($newline) {
-            $this->content .= "\n";
-        }
-    }
-
-    public function output()
-    {
-        return $this->content;
     }
 }
