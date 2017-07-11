@@ -7,8 +7,9 @@ use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
 use Larapack\Hooks\Support\RawOutput;
+use Larapack\Hooks\MemoryManager;
 
-class Hooks
+class Hooks extends MemoryManager
 {
     protected static $remote = 'https://larapack.io';
 
@@ -20,8 +21,8 @@ class Hooks
     protected $composer;
     protected $composerOutput;
 
-    protected static $memoryLimit = null;
-    protected static $memoryLimitSet = false;
+    // protected static $memoryLimit = null;
+    // protected static $memoryLimitSet = false;
 
     protected static $useVersionWildcardOnUpdate = false;
     protected static $versionWildcard = '*';
@@ -83,65 +84,6 @@ class Hooks
         }
     }
 
-    protected function memoryInBytes($value)
-    {
-        $unit = strtolower(substr($value, -1, 1));
-        $value = (int) $value;
-
-        switch ($unit) {
-            case 'g':
-                $value *= 1024;
-                // no break (cumulative multiplier)
-            case 'm':
-                $value *= 1024;
-                // no break (cumulative multiplier)
-            case 'k':
-                $value *= 1024;
-        }
-
-        return $value;
-    }
-
-    public static function setMemoryLimit($memoryLimit)
-    {
-        static::$memoryLimit = $memoryLimit;
-
-        if (static::$memoryLimitSet) {
-            app(static::class)->prepareMemoryLimit();
-        }
-    }
-
-    public static function getMemoryLimit()
-    {
-        return static::$memoryLimit;
-    }
-
-    public function prepareMemoryLimit()
-    {
-        if (!function_exists('ini_set')) {
-            return;
-        }
-
-        $memoryLimit = ini_get('memory_limit');
-
-        // Increase memory_limit if it is lower than 1.5GB
-        if ($memoryLimit != -1 && $this->memoryInBytes($memoryLimit) < 1024 * 1024 * 1536) {
-            $memoryLimit = '1536M';
-        }
-
-        // Increaes memory_limit if it is lower than the application requirement
-        if (!is_null(static::$memoryLimit) && $this->memoryInBytes($memoryLimit) < $this->memoryInBytes(static::$memoryLimit)) {
-            $memoryLimit = static::$memoryLimit;
-        }
-
-        // Set if not -1
-        if (static::$memoryLimit != -1) {
-            @ini_set('memory_limit', $memoryLimit);
-        }
-
-        static::$memoryLimitSet = true;
-    }
-
     public function prepareComposer()
     {
         // Set environment
@@ -182,7 +124,7 @@ class Hooks
     {
         $this->lastRemoteCheck = $carbon;
     }
-
+    //--------------------------------------------------------------------- SETUP PROCESS
     /**
      * Install hook.
      *
@@ -909,10 +851,9 @@ class Hooks
         return collect($hooks);
     }
 
-
     /**
      * Get local hooks listed on folder `/hooks`.
-     *                                         >>>>>>> origin/fetch-hooks-from-api-backup
+     *
      * @return array
      */
     private function getLocalHooks()
