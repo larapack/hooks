@@ -32,7 +32,7 @@ class Hooks extends MemoryManager
         $this->prepareComposer();
         $this->readOutdated();
 
-        $this->ensureCacheFile();
+        $this->ensureCache();
 
         $this->readJsonFile();
 
@@ -42,6 +42,7 @@ class Hooks extends MemoryManager
         $output = new RawOutput();
         $xdebug = new XdebugHandler($output);
         $xdebug->check();
+
         $this->composerOutput[] = $output;
 
         $this->prepareMemoryLimit();
@@ -121,6 +122,7 @@ class Hooks extends MemoryManager
     {
         $this->lastRemoteCheck = $carbon;
     }
+
     //--------------------------------------------------------------------- SETUP PROCESS
     /**
      * Install hook.
@@ -427,7 +429,7 @@ class Hooks extends MemoryManager
      */
     public function installed($name)
     {
-        return isset($this->hooks[$name]);
+        return isset($this->hooks[$name]) && $this->hooks[$name]->installed;
     }
 
     /**
@@ -663,12 +665,8 @@ class Hooks extends MemoryManager
 
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
-        if (!isset($data['hooks'])) {
-            $this->refreshCache();
-        } else {
-            foreach ($data['hooks'] as $key => $hook) {
-                $hooks[$key] = new Hook($hook);
-            }
+        foreach ($data['hooks'] as $key => $hook) {
+            $hooks[$key] = new Hook($hook);
         }
 
         if (isset($data['last_remote_check'])) {
@@ -686,6 +684,11 @@ class Hooks extends MemoryManager
         $this->hooks = collect($hooks);
     }
 
+    /**
+     * Read Composer Hooks
+     * @param  [type] $file
+     * @return hooks
+     */
     public function readComposerHooks($file = null)
     {
         if (is_null($file)) {
@@ -863,18 +866,28 @@ class Hooks extends MemoryManager
     }
 
     /**
-     * Ensure the folder and file exist for `/hooks/hooks.json`.
+     * Ensure cache requirements.
+     * This will save us validations methods all over the code.
      *
      * @return void
      */
-    private function ensureCacheFile()
+    private function ensureCache()
     {
+        // Folder for hooks exist
         if (!$this->filesystem->exists(base_path('hooks'))) {
             $this->filesystem->makeDirectory(base_path('hooks'));
         }
 
+        // Cache file hook.json exist
         if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
-            $this->filesystem->put(base_path('hooks/hooks.json'), '{}');
+            $this->remakeJson();
+
+        // Ensure the hook.json has a valid structure
+        } else {
+            $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+            if (!isset($data['hooks'])) {
+                $this->remakeJson();
+            }
         }
     }
 }
