@@ -5,9 +5,9 @@ namespace Larapack\Hooks;
 use Carbon\Carbon;
 use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Console\Input\ArrayInput;
-use Larapack\Hooks\Support\RawOutput;
 use Larapack\Hooks\Support\MemoryManager;
+use Larapack\Hooks\Support\RawOutput;
+use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks extends MemoryManager
 {
@@ -124,6 +124,7 @@ class Hooks extends MemoryManager
     }
 
     //--------------------------------------------------------------------- SETUP PROCESS
+
     /**
      * Install hook.
      *
@@ -648,8 +649,10 @@ class Hooks extends MemoryManager
     }
 
     /**
-     * Read Composer Hooks
-     * @param  [type] $file
+     * Read Composer Hooks.
+     *
+     * @param [type] $file
+     *
      * @return hooks
      */
     public function readComposerHooks($file = null)
@@ -711,7 +714,8 @@ class Hooks extends MemoryManager
 
     /**
      * Refresh cache file /hooks/hooks.json.
-     *                                        >>>>>>> origin/fetch-hooks-from-api-backup
+     *                                        >>>>>>> origin/fetch-hooks-from-api-backup.
+     *
      * @return void
      */
     public function refreshCache()
@@ -742,7 +746,6 @@ class Hooks extends MemoryManager
         $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
             return !in_array($hook['name'], array_keys($hooks));
         });
-
 
         // Merge local hooks
         foreach ($localHooks as $hook) {
