@@ -181,9 +181,9 @@ class Hooks extends MemoryManager
     }
 
     /**
-     * Prepare Hook Local Installation
+     * Prepare Hook Local Installation.
      *
-     * @param  string $name
+     * @param string $name
      *
      * @return void
      */
@@ -433,38 +433,6 @@ class Hooks extends MemoryManager
     }
 
     /**
-     * Download.
-                                                >>>>>>> origin/fetch-hooks-from-api-backup
-     * @throws \Larapack\Hooks\Exceptions\HookAlreadyExistsException
-    protected function download($remote, $version = null, $update = false)
-    {
-        $name = $remote['name'];
-
-        if ($this->local($name) && !$update) {
-            throw new Exceptions\HookAlreadyExistsException("Hook [{$name}] already exists.");
-        }
-
-        if (is_null($version) && isset($remote['version'])) {
-            $version = $remote['version'];
-        }
-
-        // Download hook
-        $downloader = app('hooks.downloaders.'.$remote['type']);
-        $downloader->download($remote, $version);
-
-        // Remove old hook
-        if ($this->filesystem->isDirectory(base_path("hooks/{$name}"))) {
-            $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
-        }
-
-        // Place new hook on hooks folder
-        $downloader->output(base_path("hooks/{$name}"));
-
-        $this->updateDownloadCount($name);
-    }
-     */
-
-    /**
      * Check if hook is enabled.
      *
      * @param $name
@@ -486,11 +454,6 @@ class Hooks extends MemoryManager
     public function disabled($name)
     {
         return !$this->enabled($name);
-
-        /**
-         *                                      >>>>>>> origin/fetch-hooks-from-api-backup
-        return isset($this->hooks[$name]) && $this->hooks[$name]->installed;
-         */
     }
 
     /**
@@ -760,28 +723,26 @@ class Hooks extends MemoryManager
         $localHooks = $this->getLocalHooks();
         $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
 
-        // If cache file exists, we need to get all enabled hooks
-        // and build cache from there.
-        if (isset($data['hooks'])) {
-            foreach ($data['hooks'] as $key => $hook) {
-                if ($hook['enabled']) {
-                    $hooks[$key] = new Hook($hook);
-                    if ($hook['type'] != 'local') {
-                        $hooks[$key]->remote = $this->getRemoteDetails($key);
-                    }
+        // Get all enabled hooks and build cache from there.
+        foreach ($data['hooks'] as $key => $hook) {
+            if ($hook['enabled']) {
+                $hooks[$key] = new Hook($hook);
+                if ($hook['type'] != 'local') {
+                    $hooks[$key]->remote = $this->getRemoteDetails($key);
                 }
             }
-
-            // Exclude enabled hooks from localHooks
-            $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
-                return !in_array($hook, array_keys($hooks));
-            });
-
-            // Exclude enabled hooks from remoteHooks
-            $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
-                return !in_array($hook['name'], array_keys($hooks));
-            });
         }
+
+        // Exclude enabled hooks from localHooks
+        $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
+            return !in_array($hook, array_keys($hooks));
+        });
+
+        // Exclude enabled hooks from remoteHooks
+        $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
+            return !in_array($hook['name'], array_keys($hooks));
+        });
+
 
         // Merge local hooks
         foreach ($localHooks as $hook) {
