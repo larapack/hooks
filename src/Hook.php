@@ -15,10 +15,6 @@ class Hook implements ArrayAccess, Arrayable
     protected $enabled = false;
     protected $installed = false;
     protected $remote = [];
-    /*
-                                        >>>>>>> origin/fetch-hooks-from-api-backup
-    protected $scripts = [];
-     */
 
     protected $latest = null;
 
@@ -184,10 +180,6 @@ class Hook implements ArrayAccess, Arrayable
             'enabled'     => (bool) $this->enabled,
             'installed'   => (bool) $this->installed,
             'remote'      => (array) $this->remote,
-        /*
-                                            >>>>>>> origin/fetch-hooks-from-api-backup
-            'scripts'     => (array) $this->scripts,
-         */
         ];
     }
 
