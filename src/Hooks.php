@@ -688,7 +688,7 @@ dd($res, $_hookname);
     }
 
     /**
-     * Read Local Hooks
+     * Read Local Hooks.
      *
      * @return hooks
      */
@@ -708,7 +708,7 @@ dd($res, $_hookname);
     }
 
     /**
-     * Read Remote Hooks
+     * Read Remote Hooks.
      *
      * @return hooks
      */
@@ -776,7 +776,6 @@ dd($res, $_hookname);
         $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
             return !in_array($hook, array_keys($hooks));
         });
-
 
         // Exclude enabled hooks from remoteHooks
         $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
