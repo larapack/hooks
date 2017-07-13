@@ -11,10 +11,12 @@ use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks extends MemoryManager
 {
-    protected static $remote = 'https://larapack.io';
+    // protected static $remote = 'https://larapack.io';
+    // protected static $remote = 'https://testing.larapack.io';
+    protected static $remote = 'http://larapack.dev';
 
     protected $filesystem;
-    protected $hooks;
+    protected $hooks = [];
     protected $lastRemoteCheck;
     protected $outdated = [];
 
@@ -29,10 +31,10 @@ class Hooks extends MemoryManager
     {
         $this->filesystem = $filesystem;
 
+        $this->ensureCache();
+
         $this->prepareComposer();
         $this->readOutdated();
-
-        $this->ensureCache();
 
         $this->readJsonFile();
 
@@ -141,7 +143,9 @@ class Hooks extends MemoryManager
 
         event(new Events\InstallingHook($name));
 
-        // Prepare a repository if the hook is located locally
+        /*
+         * Prepare a repository if the hook is located locally
+         */
         if ($this->local($name)) {
             $this->prepareLocalInstallation($name);
 
@@ -151,31 +155,29 @@ class Hooks extends MemoryManager
         }
 
         // Require hook
-        if (is_null($version)) {
-            $this->composerRequire([$name]); // TODO: Save Composer output somewhere
-        } else {
-            $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
-        }
+        $_hookname = $name.(is_null($version) ? '' : ':'.$version);
+        $res = $this->composerRequire([$_hookname]); // TODO: Save Composer output somewhere
+dd($res, $_hookname);
+
         // TODO: Handle the case when Composer outputs:
         // Your requirements could not be resolved to an installable set of packages.
         //
-        //      Problem 1
-        //        - The requested package composer-github-hook v0.0.1 exists as composer-github-hook[dev-master]
-        //          but these are rejected by your constraint.
+        //   Problem 1
+        //   - The requested package composer-github-hook v0.0.1 exists as composer-github-hook[dev-master]
+        //     but these are rejected by your constraint.
+        //
+        //  Problem 2
+        //  - The requested package voyager-templates could not be found in any version, there may
+        //    be a typo in the package name.
 
         // TODO: Move to Composer Plugin
-        $this->readJsonFile();
+        // $this->readJsonFile();
 
+        // Update hooks.json
+        $this->hooks[$name]->update(['installed' => true]);
+        $this->remakeJson();
         /*
                                                 >>>>>>> origin/fetch-hooks-from-api-backup
-
-        // Add data to json
-        $hook = new Hook($data);
-        $hook->update(['installed' => true]);
-
-        $this->hooks[$name] = $hook;
-
-        $this->remakeJson();
         */
 
         event(new Events\InstalledHook($this->hooks[$name]));
@@ -497,6 +499,20 @@ class Hooks extends MemoryManager
     }
 
     /**
+     * Get enabled hooks.
+     *
+     * @return array
+     */
+    public function getEnabled()
+    {
+        if (!count($this->hooks()) > 0) {
+            return [];
+        }
+
+        return $this->hooks()->where('enabled', true);
+    }
+
+    /**
      * Get hook information.
      *
      * @param $name
@@ -651,22 +667,17 @@ class Hooks extends MemoryManager
     /**
      * Read Composer Hooks.
      *
-     * @param [type] $file
-     *
      * @return hooks
      */
-    public function readComposerHooks($file = null)
+    public function readComposerHooks()
     {
-        if (is_null($file)) {
-            $file = base_path('composer.lock');
-        }
-
         $hooks = [];
-        $composer = [];
-        if ($this->filesystem->exists($file)) {
-            $composer = json_decode($this->filesystem->get($file), true);
+
+        if (!$this->filesystem->exists(base_path('composer.lock'))) {
+            return $hooks;
         }
 
+        $composer = json_decode($this->filesystem->get(base_path('composer.lock')), true);
         foreach (array_get($composer, 'packages', []) as $package) {
             if (array_get($package, 'notification-url') == static::$remote.'/downloads') {
                 $hooks[$package['name']] = new Hook($package);
@@ -676,6 +687,11 @@ class Hooks extends MemoryManager
         return $hooks;
     }
 
+    /**
+     * Read Local Hooks
+     *
+     * @return hooks
+     */
     public function readLocalHooks()
     {
         $hooks = [];
@@ -686,6 +702,22 @@ class Hooks extends MemoryManager
             if (!is_null($composer) && isset($composer['name'])) {
                 $hooks[$composer['name']] = new Hook($composer);
             }
+        }
+
+        return $hooks;
+    }
+
+    /**
+     * Read Remote Hooks
+     *
+     * @return hooks
+     */
+    public function readRemoteHooks()
+    {
+        $hooks = [];
+        $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
+        foreach ($remoteHooks as $hook) {
+            $hooks[$hook['name']] = new Hook($hook);
         }
 
         return $hooks;
@@ -713,8 +745,7 @@ class Hooks extends MemoryManager
     }
 
     /**
-     * Refresh cache file /hooks/hooks.json.
-     *                                        >>>>>>> origin/fetch-hooks-from-api-backup.
+     * Refresh hooks cache.
      *
      * @return void
      */
@@ -724,16 +755,20 @@ class Hooks extends MemoryManager
 
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
 
-        $localHooks = $this->getLocalHooks();
+        /*
+         * Read Remote Hooks
+         */
         $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
+
+        $localHooks = $this->getLocalHooks();
 
         // Get all enabled hooks and build cache from there.
         foreach ($data['hooks'] as $key => $hook) {
             if ($hook['enabled']) {
                 $hooks[$key] = new Hook($hook);
-                if ($hook['type'] != 'local') {
-                    $hooks[$key]->remote = $this->getRemoteDetails($key);
-                }
+                // if ($hook['type'] != 'local') {
+                //     $hooks[$key]->remote = $this->getRemoteDetails($key);
+                // }
             }
         }
 
@@ -741,6 +776,7 @@ class Hooks extends MemoryManager
         $localHooks = array_filter($localHooks, function ($hook) use ($hooks) {
             return !in_array($hook, array_keys($hooks));
         });
+
 
         // Exclude enabled hooks from remoteHooks
         $remoteHooks = array_filter($remoteHooks, function ($hook) use ($hooks) {
@@ -755,17 +791,14 @@ class Hooks extends MemoryManager
         // Merge remote hooks
         foreach ($remoteHooks as $hook) {
             $_hook = $this->makeHookData($hook['type'], [
-                'name'        => $hook['name'],
-                'description' => $hook['description'],
-                'remote'      => $this->getRemoteDetails($hook['name']),
+                'name'   => $hook['name'],
+                'remote' => $this->getRemoteDetails($hook['name']),
             ]);
 
             $hooks[$hook['name']] = new Hook($_hook);
         }
 
         $this->hooks = collect($hooks);
-
-        $this->lastRemoteCheck = Carbon::now();
 
         $this->remakeJson();
     }

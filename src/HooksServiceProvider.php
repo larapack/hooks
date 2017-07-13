@@ -31,7 +31,7 @@ class HooksServiceProvider extends ServiceProvider
     public function registerHookProviders()
     {
         // load only the enabled hooks
-        $hooks = app('hooks')->hooks()->where('enabled', true);
+        $hooks = app('hooks')->getEnabled();
         $loader = AliasLoader::getInstance();
 
         foreach ($hooks as $hook) {
