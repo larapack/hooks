@@ -141,13 +141,15 @@ class Hooks extends MemoryManager
             throw new Exceptions\HookAlreadyInstalledException("Hook [{$name}] is already installed.");
         }
 
-        event(new Events\InstallingHook($name));
+        event(new \Larapack\Hooks\Events\InstallingHook($name));
+        // event(new Events\InstallingHook($name));
+
+
 
         /*
          * Prepare a repository if the hook is located locally
-         */
         if ($this->local($name)) {
-            $this->prepareLocalInstallation($name);
+            $this->prepareLocalInstall($name);
 
             if (is_null($version)) {
                 $version = static::$localVersion;
@@ -158,6 +160,7 @@ class Hooks extends MemoryManager
         $_hookname = $name.(is_null($version) ? '' : ':'.$version);
         $res = $this->composerRequire([$_hookname]); // TODO: Save Composer output somewhere
 dd($res, $_hookname);
+         */
 
         // TODO: Handle the case when Composer outputs:
         // Your requirements could not be resolved to an installable set of packages.
@@ -176,9 +179,6 @@ dd($res, $_hookname);
         // Update hooks.json
         $this->hooks[$name]->update(['installed' => true]);
         $this->remakeJson();
-        /*
-                                                >>>>>>> origin/fetch-hooks-from-api-backup
-        */
 
         event(new Events\InstalledHook($this->hooks[$name]));
     }
@@ -190,14 +190,12 @@ dd($res, $_hookname);
      *
      * @return void
      */
-    public function prepareLocalInstallation($name)
+    public function prepareLocalInstall($name)
     {
         $this->composerJson->addRepository($name, [
             'type' => 'vcs',
             'url'  => "hooks/{$name}",
-        ]);
-
-        $this->composerJson->save();
+        ])->save();
     }
 
     /**
@@ -221,16 +219,18 @@ dd($res, $_hookname);
 
         event(new Events\UninstallingHook($hook));
 
+        if (!$this->local($name)) {
+            // TODO: Save Composer output somewhere
+            $this->composerRemove([$name]);
+        }
+
         if ($this->enabled($name)) {
             event(new Events\DisablingHook($hook));
-
-            $this->runScripts($name, 'disable');
 
             event(new Events\DisabledHook($hook));
         }
 
         // TODO: Run scripts for uninstall
-
         $hook->update([
             'enabled'   => false,
             'installed' => false,
@@ -715,8 +715,8 @@ dd($res, $_hookname);
     public function readRemoteHooks()
     {
         $hooks = [];
-        $remoteHooks = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
-        foreach ($remoteHooks as $hook) {
+        $remotes = json_decode(file_get_contents($this->getRemote().'/api/hooks'), true);
+        foreach ($remotes as $hook) {
             $hooks[$hook['name']] = new Hook($hook);
         }
 
@@ -741,6 +741,14 @@ dd($res, $_hookname);
         return $this->runComposer([
             'command'  => 'require',
             'packages' => $packages,
+        ]);
+    }
+
+    public function composerRemove(array $package)
+    {
+        return $this->runComposer([
+            'command' => 'remove',
+            'package' => $package,
         ]);
     }
 
