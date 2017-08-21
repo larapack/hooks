@@ -14,7 +14,6 @@ class Hook implements ArrayAccess, Arrayable
 
     protected $enabled = false;
     protected $installed = false;
-    protected $remote = [];
 
     protected $latest = null;
 
@@ -179,7 +178,6 @@ class Hook implements ArrayAccess, Arrayable
             'version'     => $this->version,
             'enabled'     => (bool) $this->enabled,
             'installed'   => (bool) $this->installed,
-            'remote'      => (array) $this->remote,
         ];
     }
 
