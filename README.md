@@ -25,7 +25,7 @@ composer require larapack/hooks
 Then add the service provider to the configuration:
 ```php
 'providers' => [
-    Larapack\Hooks\HooksServierProvider::class,
+    Larapack\Hooks\HooksServiceProvider::class,
 ],
 ```
 
