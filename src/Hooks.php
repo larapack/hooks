@@ -144,8 +144,6 @@ class Hooks extends MemoryManager
         event(new \Larapack\Hooks\Events\InstallingHook($name));
         // event(new Events\InstallingHook($name));
 
-
-
         /*
          * Prepare a repository if the hook is located locally
         if ($this->local($name)) {
@@ -886,7 +884,7 @@ dd($res, $_hookname);
         if (!$this->filesystem->exists(base_path('hooks/hooks.json'))) {
             $this->remakeJson();
 
-        // Ensure the hook.json has a valid structure
+            // Ensure the hook.json has a valid structure
         } else {
             $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
             if (!isset($data['hooks'])) {
