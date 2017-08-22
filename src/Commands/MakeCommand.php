@@ -28,6 +28,7 @@ class MakeCommand extends Command
     public function handle()
     {
         $name = $this->argument('name');
+        $name = kebab_case($name);
 
         $this->hooks->make($name);
 

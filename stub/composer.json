@@ -1,0 +1,19 @@
+{
+  "name": "kebab-case",
+  "description": "This is my first hook.",
+  "require": {
+    "larapack/hooks": "~1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "StudlyCase\\": "src/"
+    }
+  },
+  "extra": {
+    "hook": {
+      "providers": [
+        "StudlyCase\\StudlyCaseServiceProvider"
+      ]
+    }
+  }
+}

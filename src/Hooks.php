@@ -430,6 +430,8 @@ class Hooks
      */
     public function make($name)
     {
+        $studlyCase = studly_case($name);
+
         // Check if already exists
         if ($this->downloaded($name)) {
             throw new Exceptions\HookAlreadyExistsException("Hook [{$name}] already exists.");
@@ -443,26 +445,51 @@ class Hooks
         }
 
         // Create folder for the new hook
+        $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
         $this->filesystem->makeDirectory(base_path("hooks/{$name}"));
 
         // make stub files
-        /*
-        $this->filesystem->put(
-            base_path("hooks/{$name}/hook.json"),
-            json_encode($data)
-        );
-        */
-
-        // Make composer.json
-        $composer = [
-            'name' => $name,
-        ];
-        $this->filesystem->put(
-            base_path("hooks/{$name}/composer.json"),
-            json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-        );
+        $this->makeStubFiles($name);
 
         event(new Events\MadeHook($name));
+    }
+
+    protected function makeStubFiles($name)
+    {
+        $replaces = [
+            'kebab-case' => $name,
+            'snake_case' => snake_case($name),
+            'camcelCase' => camel_case($name),
+            'StudlyCase' => studly_case($name),
+        ];
+
+        $files = $this->filesystem->allFiles(__DIR__.'/../stub');
+
+        foreach ($files as $file) {
+            if ($path = $file->getRelativePath()) {
+                $parts = explode('/', $path);
+
+                $location = base_path("hooks/{$name}");
+
+                foreach ($parts as $part) {
+                    $location .= "/{$part}";
+
+                    if (!$this->filesystem->isDirectory($location)) {
+                        $this->filesystem->makeDirectory($location);
+                    }
+                }
+            }
+
+            $content = $this->replace($this->filesystem->get($file->getRealPath()), $replaces);
+            $filename = $this->replace($file->getRelativePathname(), $replaces);
+
+            $this->filesystem->put(base_path("hooks/{$name}/{$filename}"), $content);
+        }
+    }
+
+    protected function replace($content, array $replaces)
+    {
+        return str_replace(array_keys($replaces), array_values($replaces), $content);
     }
 
     /**
@@ -522,8 +549,12 @@ class Hooks
      */
     public function downloaded($name)
     {
-        return $this->filesystem->isDirectory(base_path("hooks/{$name}"))
-            || $this->filesystem->isDirectory(base_path("vendor/{$name}"));
+        if ($this->local($name)) {
+            return $this->filesystem->isDirectory(base_path("hooks/{$name}"))
+                && $this->filesystem->exists(base_path("hooks/{$name}/composer.json"));
+        }
+
+        return $this->filesystem->isDirectory(base_path("vendor/{$name}"));
     }
 
     /**
@@ -726,6 +757,10 @@ class Hooks
         $hooks = [];
         $directories = array_except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
         foreach ($directories as $directory) {
+            if (!$this->filesystem->exists($directory.'/composer.json')) {
+                continue;
+            }
+
             $composer = json_decode($this->filesystem->get($directory.'/composer.json'), true);
 
             if (!is_null($composer) && isset($composer['name'])) {
