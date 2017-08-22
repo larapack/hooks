@@ -240,7 +240,7 @@ class Hooks
      *
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      */
-    public function uninstall($name, $keep = false)
+    public function uninstall($name, $delete = false)
     {
         // Check if installed
         if (!$this->installed($name)) {
@@ -263,14 +263,19 @@ class Hooks
 
         // TODO: Run scripts for uninstall
 
-        $hooks = $this->hooks()->where('name', '!=', $name);
-        $this->hooks = $hooks;
+        $this->runComposer([
+            'command'  => 'remove',
+            'packages' => [$name],
+        ]);
 
-        $this->remakeJson();
+        //$hooks = $this->hooks()->where('name', '!=', $name);
+        //$this->hooks = $hooks;
+
+        //$this->remakeJson();
 
         event(new Events\UninstalledHook($name));
 
-        if (!$keep) {
+        if ($delete && $hook->isLocal()) {
             $this->filesystem->deleteDirectory(base_path("hooks/{$name}"));
         }
     }

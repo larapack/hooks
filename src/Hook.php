@@ -18,10 +18,14 @@ class Hook implements ArrayAccess, Arrayable
 
     protected $composerJson;
 
+    protected $filesystem;
+
     protected static $jsonParameters = ['description', 'enabled'];
 
     public function __construct($data)
     {
+        $this->filesystem = new Filesystem;
+
         $this->update($data);
 
         $this->loadJson();
@@ -71,7 +75,7 @@ class Hook implements ArrayAccess, Arrayable
             $path = 'hooks/'.$this->name;
         }
 
-        return app(Filesystem::class)->get(base_path($path.'/composer.json'));
+        return $this->filesystem->get(base_path($path.'/composer.json'));
     }
 
     public function setLatest($latest)
@@ -106,10 +110,8 @@ class Hook implements ArrayAccess, Arrayable
 
     public function mergeWithJson($path)
     {
-        $filesystem = app(Filesystem::class);
-
-        if ($filesystem->exists($path)) {
-            $data = json_decode($filesystem->get($path), true);
+        if ($this->filesystem->exists($path)) {
+            $data = json_decode($this->filesystem->get($path), true);
 
             $this->update(
                 collect($data)->only(static::$jsonParameters)->all()
@@ -186,6 +188,6 @@ class Hook implements ArrayAccess, Arrayable
 
     public function isLocal()
     {
-        return app(Filesystem::class)->isDirectory(base_path("hooks/{$this->name}"));
+        return $this->filesystem->isDirectory(base_path("hooks/{$this->name}"));
     }
 }

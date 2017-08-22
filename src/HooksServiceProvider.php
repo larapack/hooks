@@ -20,9 +20,6 @@ class HooksServiceProvider extends ServiceProvider
         // Register Hooks system and aliases
         $this->app->singleton(Hooks::class, Hooks::class);
         $this->app->alias(Hooks::class, 'hooks');
-
-        // Register hook providers
-        $this->registerHookProviders();
     }
 
     /**
@@ -31,7 +28,7 @@ class HooksServiceProvider extends ServiceProvider
     public function registerHookProviders()
     {
         // load only the enabled hooks
-        $hooks = app('hooks')->hooks()->where('enabled', true);
+        $hooks = $this->app['hooks']->hooks()->where('enabled', true);
         $loader = AliasLoader::getInstance();
 
         foreach ($hooks as $hook) {
@@ -52,7 +49,8 @@ class HooksServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Register hook providers
+        $this->registerHookProviders();
     }
 
     /**
