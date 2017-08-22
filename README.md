@@ -12,7 +12,7 @@ Made with ❤️ by [Mark Topper](https://marktopper.com)
 
 # Hooks
 
-Hooks is a extension system for your [Laravel](https://ulties.com) application.
+Hooks is a extension system for your [Laravel](https://laravel.com) application.
 
 # Installation
 
@@ -25,7 +25,7 @@ composer require larapack/hooks
 Then add the service provider to the configuration:
 ```php
 'providers' => [
-    Larapack\Hooks\HooksServierProvider::class,
+    Larapack\Hooks\HooksServiceProvider::class,
 ],
 ```
 

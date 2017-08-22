@@ -22,6 +22,11 @@ class CheckCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $hooks = $this->hooks->checkForUpdates();
 
         $count = $hooks->count();
