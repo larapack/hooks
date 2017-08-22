@@ -22,6 +22,11 @@ class ListCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $this->table(['Name', 'Status'], $this->hooks->hooks()->transform(function ($hook) {
             return [
                 'name'    => $hook['name'],

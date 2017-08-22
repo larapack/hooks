@@ -22,6 +22,11 @@ class UpdateCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $name = $this->argument('name');
 
         $hooks = $this->hooks->hooks();

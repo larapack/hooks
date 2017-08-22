@@ -25,6 +25,11 @@ class SetupCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $composer = new Composer(base_path('composer.json'));
 
         $composer->addRepository(static::REPOSITORY_NAME, [

@@ -22,6 +22,11 @@ class UninstallCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $name = $this->argument('name');
 
         $this->hooks->uninstall($name, $this->option('keep'));

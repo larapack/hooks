@@ -22,6 +22,11 @@ class InstallCommand extends Command
 
     public function fire()
     {
+        return $this->handle();
+    }
+
+    public function handle()
+    {
         $name = $this->argument('name');
 
         $this->hooks->install($name, $this->argument('version'));
