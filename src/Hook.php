@@ -86,7 +86,11 @@ class Hook implements ArrayAccess, Arrayable
     public function loadJson($path = null)
     {
         if (is_null($path)) {
-            $path = base_path("hooks/{$this->name}/hook.json");
+            if ($this->isLocal()) {
+                $path = base_path("hooks/{$this->name}/hook.json");
+            } else {
+                $path = base_path("vendor/{$this->name}/hook.json");
+            }
         }
 
         $this->mergeWithJson($path);
