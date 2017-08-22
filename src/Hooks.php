@@ -691,8 +691,6 @@ class Hooks
             }
         }
 
-
-
         $this->hooks = collect($hooks);
     }
 
