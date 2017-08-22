@@ -209,6 +209,7 @@ class Hooks
         } else {
             $this->composerRequire([$name.':'.$version]); // TODO: Save Composer output somewhere
         }
+
         // TODO: Handle the case when Composer outputs:
         // Your requirements could not be resolved to an installable set of packages.
         //
@@ -217,7 +218,8 @@ class Hooks
         //          but these are rejected by your constraint.
 
         // TODO: Move to Composer Plugin
-        $this->readJsonFile();
+        $this->readJsonFile([$name]);
+        $this->remakeJson();
 
         event(new Events\InstalledHook($this->hooks[$name]));
     }
@@ -225,7 +227,7 @@ class Hooks
     public function prepareLocalInstallation($name)
     {
         $this->composerJson->addRepository($name, [
-            'type' => 'vcs',
+            'type' => 'path',
             'url'  => "hooks/{$name}",
         ]);
 
@@ -268,10 +270,10 @@ class Hooks
             'packages' => [$name],
         ]);
 
-        //$hooks = $this->hooks()->where('name', '!=', $name);
-        //$this->hooks = $hooks;
+        $hooks = $this->hooks()->where('name', '!=', $name);
+        $this->hooks = $hooks;
 
-        //$this->remakeJson();
+        $this->remakeJson();
 
         event(new Events\UninstalledHook($name));
 
@@ -642,7 +644,7 @@ class Hooks
     /**
      * Read hooks.json file.
      */
-    public function readJsonFile()
+    public function readJsonFile($localsIncluded = [])
     {
         $hooks = [];
 
@@ -684,6 +686,10 @@ class Hooks
         }
 
         foreach ($this->readLocalHooks() as $name => $composerHook) {
+            if (!isset($hooks[$name]) && !in_array($name, $localsIncluded)) {
+                continue; // Do not show not-installed local hooks.
+            }
+
             $hooks[$name] = $composerHook;
 
             if (in_array($name, $enabled)) {
@@ -725,6 +731,7 @@ class Hooks
             $composer = json_decode($this->filesystem->get($directory.'/composer.json'), true);
 
             if (!is_null($composer) && isset($composer['name'])) {
+                $composer['type'] = 'local';
                 $hooks[$composer['name']] = new Hook($composer);
             }
         }
