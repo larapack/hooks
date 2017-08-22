@@ -24,7 +24,7 @@ class Hook implements ArrayAccess, Arrayable
 
     public function __construct($data)
     {
-        $this->filesystem = new Filesystem;
+        $this->filesystem = new Filesystem();
 
         $this->update($data);
 

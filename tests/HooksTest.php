@@ -299,7 +299,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name'   => 'local-test-hook',
+            'name'     => 'local-test-hook',
             '--delete' => true,
         ]);
 
