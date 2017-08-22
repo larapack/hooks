@@ -256,7 +256,7 @@ class Hooks
         if ($this->enabled($name)) {
             event(new Events\DisablingHook($hook));
 
-            $this->runScripts($name, 'disable');
+            //$this->runScripts($name, 'disable');
 
             event(new Events\DisabledHook($hook));
         }
@@ -655,10 +655,19 @@ class Hooks
         }
 
         $data = json_decode($this->filesystem->get(base_path('hooks/hooks.json')), true);
+        $enabled = [];
 
         if (isset($data['hooks'])) {
             foreach ($data['hooks'] as $key => $hook) {
+                if (!$this->filesystem->exists(base_path("hooks/{$key}/composer.json")) &&
+                    !$this->filesystem->exists(base_path("vendor/{$key}/composer.json"))) {
+                    continue; // This hook does not seem to exist anymore
+                }
+
                 $hooks[$key] = new Hook($hook);
+                if ($hooks[$key]->enabled) {
+                    $enabled[] = $key;
+                }
             }
         }
 
@@ -668,11 +677,21 @@ class Hooks
 
         foreach ($this->readComposerHooks() as $name => $composerHook) {
             $hooks[$name] = $composerHook;
+
+            if (in_array($name, $enabled)) {
+                $hooks[$name]->enabled = true;
+            }
         }
 
         foreach ($this->readLocalHooks() as $name => $composerHook) {
             $hooks[$name] = $composerHook;
+
+            if (in_array($name, $enabled)) {
+                $hooks[$name]->enabled = true;
+            }
         }
+
+
 
         $this->hooks = collect($hooks);
     }
