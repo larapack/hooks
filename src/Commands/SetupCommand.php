@@ -43,6 +43,6 @@ class SetupCommand extends Command
 
         $composer->save();
 
-        $this->info('Hooks are now ready to use! Go ahead and try to "composer require test-hook"');
+        $this->info('Hooks are now ready to use! Go ahead and try to "php artisan hook:install test-hook"');
     }
 }
