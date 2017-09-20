@@ -33,6 +33,6 @@ Then add the service provider to the configuration:
 
 Packages can be found on [larapack.io](https://larapack.io).
 
-# Alternative systems
+# Integrations
 
 - [Voyager Hooks](https://github.com/larapack/voyager-hooks) - Hooks supported directly in the Voyager admin panel.
