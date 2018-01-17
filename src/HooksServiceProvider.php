@@ -12,7 +12,7 @@ class HooksServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $configPath = dirname(__DIR__) . '/publishable/config/hooks.php';
+        $configPath = dirname(__DIR__).'/publishable/config/hooks.php';
 
         $this->mergeConfigFrom($configPath, 'hooks');
 
