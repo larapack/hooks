@@ -12,9 +12,22 @@ class HooksServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $configPath = dirname(__DIR__) . '/publishable/config/hooks.php';
+
+        $this->mergeConfigFrom($configPath, 'hooks');
+
+        if (!config('hooks.enabled', true)) {
+            return;
+        }
+
         // Registers resources and commands
         if ($this->app->runningInConsole()) {
             $this->registerCommands();
+
+            $this->publishes(
+                [$configPath => config_path('hooks.php')],
+                'hooks-config'
+            );
         }
 
         // Register Hooks system and aliases
@@ -49,6 +62,10 @@ class HooksServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if (!config('hooks.enabled', true)) {
+            return;
+        }
+
         // Register hook providers
         $this->registerHookProviders();
     }
