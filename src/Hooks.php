@@ -3,7 +3,6 @@
 namespace Larapack\Hooks;
 
 use Carbon\Carbon;
-use Composer\XdebugHandler;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
 
@@ -35,11 +34,7 @@ class Hooks
 
         $this->composerJson = new Composer(base_path('composer.json'));
 
-        // Create output for XdebugHandler and Application
-        $output = new RawOutput();
-        $xdebug = new XdebugHandler($output);
-        $xdebug->check();
-        $this->composerOutput[] = $output;
+        $this->composerOutput[] = new RawOutput();
 
         $this->prepareMemoryLimit();
     }
