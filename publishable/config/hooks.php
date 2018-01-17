@@ -2,6 +2,6 @@
 
 return [
 
-	'enabled' => env('HOOKS_ENABLED', true),
+    'enabled' => env('HOOKS_ENABLED', true),
 
 ];
