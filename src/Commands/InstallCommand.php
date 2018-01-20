@@ -7,7 +7,7 @@ use Larapack\Hooks\Hooks;
 
 class InstallCommand extends Command
 {
-    protected $signature = 'hook:install {name} {version?} {--enable}';
+    protected $signature = 'hook:install {name} {version?} {--enable} {--without-migrating} {--without-seeding} {--without-publishing}';
 
     protected $description = 'Download and install a hook from remote https://larapack.io';
 
@@ -29,7 +29,13 @@ class InstallCommand extends Command
     {
         $name = $this->argument('name');
 
-        $this->hooks->install($name, $this->argument('version'));
+        $this->hooks->install(
+            $name,
+            $this->argument('version'),
+            !$this->option('without-migrating'),
+            !$this->option('without-seeding'),
+            !$this->option('without-publishing')
+        );
 
         if ($this->option('enable')) {
             $this->hooks->enable($name);

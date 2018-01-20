@@ -25,6 +25,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // Cleanup old hooks before testing
         $filesystem->deleteDirectory(base_path('hooks'));
 
+        // Cleanup published files
+        $filesystem->deleteDirectory(base_path('public/vendor'));
+
         // Clear old hooks
         $hook = app(Hooks::class);
         $hook->readJsonFile();
@@ -57,6 +60,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         // Reload JSON files
         app(Hooks::class)->readJsonFile();
+
+        // Migrate
+        $this->artisan('migrate');
     }
 
     public function tearDown()
