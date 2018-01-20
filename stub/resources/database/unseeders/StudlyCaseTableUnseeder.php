@@ -13,13 +13,13 @@ class StudlyCaseTableUnseeder extends Seeder
      */
     public function run()
     {
-    	// Skip if table does not exists.
-    	if (!Schema::hasTable('snake_case')) {
-    		return;
-    	}
+        // Skip if table does not exists.
+        if (!Schema::hasTable('snake_case')) {
+            return;
+        }
 
         DB::table('snake_case')
-        	->whereIn('name', ['foo', 'bar', 'baz'])
-        	->delete();
+            ->whereIn('name', ['foo', 'bar', 'baz'])
+            ->delete();
     }
 }

@@ -675,10 +675,10 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name'    => 'migrating-hook',
-            'version' => 'v1.0.0',
+            'name'                => 'migrating-hook',
+            'version'             => 'v1.0.0',
             '--without-migrating' => true,
-            '--without-seeding' => true,
+            '--without-seeding'   => true,
         ]);
 
         $this->assertFalse(Schema::hasTable('tests'));
@@ -728,7 +728,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name'    => 'migrating-hook',
+            'name'                  => 'migrating-hook',
             '--without-unmigrating' => true,
         ]);
 
@@ -793,10 +793,10 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:update', [
-            'name'    => 'migrating-hook',
-            'version' => 'v2.0.0',
+            'name'                => 'migrating-hook',
+            'version'             => 'v2.0.0',
             '--without-migrating' => true,
-            '--without-seeding' => true,
+            '--without-seeding'   => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -829,8 +829,8 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name'    => 'migrating-hook',
-            'version' => 'v1.0.0',
+            'name'              => 'migrating-hook',
+            'version'           => 'v1.0.0',
             '--without-seeding' => true,
         ]);
 
@@ -855,7 +855,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name'    => 'migrating-hook',
+            'name'                  => 'migrating-hook',
             '--without-unmigrating' => true,
         ]);
 
@@ -880,9 +880,9 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name'    => 'migrating-hook',
+            'name'                  => 'migrating-hook',
             '--without-unmigrating' => true,
-            '--without-unseeding' => true,
+            '--without-unseeding'   => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -933,8 +933,8 @@ class HooksTest extends TestCase
 
         // Update hook
         $this->artisan('hook:update', [
-            'name'    => 'migrating-hook',
-            'version' => 'v2.0.0',
+            'name'              => 'migrating-hook',
+            'version'           => 'v2.0.0',
             '--without-seeding' => true,
         ]);
 
@@ -971,8 +971,8 @@ class HooksTest extends TestCase
 
         // Install hook
         $this->artisan('hook:install', [
-            'name'    => 'migrating-hook',
-            'version' => 'v1.0.0',
+            'name'                 => 'migrating-hook',
+            'version'              => 'v1.0.0',
             '--without-publishing' => true,
         ]);
 
@@ -1060,7 +1060,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name' => 'migrating-hook',
+            'name'                   => 'migrating-hook',
             '--without-unpublishing' => true,
         ]);
 
@@ -1091,7 +1091,7 @@ class HooksTest extends TestCase
 
         // Update hook
         $this->artisan('hook:update', [
-            'name' => 'migrating-hook',
+            'name'    => 'migrating-hook',
             'version' => 'v2.0.0',
         ]);
 
@@ -1125,8 +1125,8 @@ class HooksTest extends TestCase
 
         // Update hook
         $this->artisan('hook:update', [
-            'name' => 'migrating-hook',
-            'version' => 'v2.0.0',
+            'name'                 => 'migrating-hook',
+            'version'              => 'v2.0.0',
             '--without-publishing' => true,
         ]);
 
@@ -1162,7 +1162,7 @@ class HooksTest extends TestCase
 
         // Update hook
         $this->artisan('hook:update', [
-            'name' => 'migrating-hook',
+            'name'    => 'migrating-hook',
             'version' => 'v2.0.0',
         ]);
 
@@ -1201,8 +1201,8 @@ class HooksTest extends TestCase
 
         // Update hook
         $this->artisan('hook:update', [
-            'name' => 'migrating-hook',
-            'version' => 'v2.0.0',
+            'name'            => 'migrating-hook',
+            'version'         => 'v2.0.0',
             '--force-publish' => true,
         ]);
 
