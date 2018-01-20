@@ -319,7 +319,7 @@ class Hooks
      *
      * @return bool
      */
-    public function update($name, $version = null, $migrate = true, $seed = true, $publish = true, $forcePublishing)
+    public function update($name, $version, $migrate, $seed, $publish, $forcePublishing)
     {
         // Check if hook exists
         if (!$this->downloaded($name)) {
@@ -495,10 +495,10 @@ class Hooks
     protected function makeStubFiles($name)
     {
         $replaces = [
-            'kebab-case' => $name,
-            'snake_case' => snake_case(str_replace('-', '_', $name)),
-            'camelCase' => camel_case(str_replace('-', '_', $name)),
-            'StudlyCase' => studly_case(str_replace('-', '_', $name)),
+            'kebab-case'          => $name,
+            'snake_case'          => snake_case(str_replace('-', '_', $name)),
+            'camelCase'           => camel_case(str_replace('-', '_', $name)),
+            'StudlyCase'          => studly_case(str_replace('-', '_', $name)),
             'MIGRATION_DATE_TIME' => $this->migrationDateTimeString(),
         ];
 
@@ -891,7 +891,7 @@ class Hooks
     /**
      * Run migrations found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function migrateHook(Hook $hook)
     {
@@ -903,7 +903,7 @@ class Hooks
     /**
      * Rollback migrations found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function unmigrateHook(Hook $hook)
     {
@@ -915,7 +915,7 @@ class Hooks
     /**
      * Run seeders found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function seedHook(Hook $hook)
     {
@@ -928,7 +928,7 @@ class Hooks
     /**
      * Run unseeders found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function unseedHook(Hook $hook)
     {
@@ -941,7 +941,7 @@ class Hooks
     /**
      * Publish assets found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function publishHook(Hook $hook, $force = false)
     {
@@ -983,7 +983,7 @@ class Hooks
 
             $newFiles->merge($updatedFiles)
                 ->each(function ($filename) use ($realLocation, $publishPath, $filesystem) {
-                    $directory = substr($publishPath.'/'.$filename, 0, - strlen(basename($filename)));
+                    $directory = substr($publishPath.'/'.$filename, 0, -strlen(basename($filename)));
 
                     if (!$filesystem->isDirectory($directory)) {
                         $filesystem->makeDirectory($directory, 0755, true, true);
@@ -1001,7 +1001,7 @@ class Hooks
     /**
      * Unpublish assets found for a specific hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      */
     protected function unpublishHook(Hook $hook)
     {
@@ -1033,8 +1033,8 @@ class Hooks
     /**
      * Run seeder files.
      *
-     * @param array   $folders
-     * @param string  $basePath
+     * @param array  $folders
+     * @param string $basePath
      */
     protected function runSeeders($folders, $basePath)
     {
@@ -1046,9 +1046,9 @@ class Hooks
                     return $file->getExtension() == 'php';
                 })->each(function ($file) {
                     $class = substr($file->getFilename(), 0, -4);
-                    require_once($file->getRealPath());
+                    require_once $file->getRealPath();
 
-                    (new $class)->run();
+                    (new $class())->run();
                 });
             });
     }
@@ -1056,8 +1056,8 @@ class Hooks
     /**
      * Get collection of realpath paths.
      *
-     * @param array   $paths
-     * @param string  $basePath
+     * @param array  $paths
+     * @param string $basePath
      *
      * @return \Illuminate\Support\Collection
      */
@@ -1071,9 +1071,9 @@ class Hooks
     }
 
     /**
-     * Make temponary backup of hook
+     * Make temponary backup of hook.
      *
-     * @param \Larapack\Hooks\Hook  $hook
+     * @param \Larapack\Hooks\Hook $hook
      *
      * @return void
      */

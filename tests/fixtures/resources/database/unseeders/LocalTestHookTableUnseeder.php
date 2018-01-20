@@ -13,13 +13,13 @@ class LocalTestHookTableUnseeder extends Seeder
      */
     public function run()
     {
-    	// Skip if table does not exists.
-    	if (!Schema::hasTable('local_test_hook')) {
-    		return;
-    	}
+        // Skip if table does not exists.
+        if (!Schema::hasTable('local_test_hook')) {
+            return;
+        }
 
         DB::table('local_test_hook')
-        	->whereIn('name', ['foo', 'bar', 'baz'])
-        	->delete();
+            ->whereIn('name', ['foo', 'bar', 'baz'])
+            ->delete();
     }
 }
