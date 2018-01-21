@@ -3,8 +3,8 @@
 namespace Larapack\Hooks;
 
 use Carbon\Carbon;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks
