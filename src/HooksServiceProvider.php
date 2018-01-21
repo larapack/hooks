@@ -2,6 +2,7 @@
 
 namespace Larapack\Hooks;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,7 +32,12 @@ class HooksServiceProvider extends ServiceProvider
         }
 
         // Register Hooks system and aliases
-        $this->app->singleton(Hooks::class, Hooks::class);
+        $this->app->singleton(Hooks::class, function ($app) {
+            $filesystem = $app[Filesystem::class];
+            $migrator = $app['migrator'];
+
+            return new Hooks($filesystem, $migrator);
+        });
         $this->app->alias(Hooks::class, 'hooks');
     }
 

@@ -1,21 +1,21 @@
 {
-    "name": "kebab-case",
+    "name": "local-test-hook",
     "description": "This is my first hook.",
     "require": {
         "larapack/hooks": "^1.0.5"
     },
     "autoload": {
         "psr-4": {
-            "StudlyCase\\": "src/"
+            "LocalTestHook\\": "src/"
         }
     },
     "extra": {
         "hook": {
             "providers": [
-                "StudlyCase\\StudlyCaseServiceProvider"
+                "LocalTestHook\\LocalTestHookServiceProvider"
             ],
             "aliases": {
-                "StudlyCase": "StudlyCase\\StudlyCaseFacade"
+                "LocalTestHook": "LocalTestHook\\LocalTestHookFacade"
             },
             "migrations": [
                 "resources/database/migrations"
@@ -27,7 +27,7 @@
                 "resources/database/unseeders"
             ],
             "assets": {
-                "resources/assets": "public/vendor/kebab-case"
+                "resources/assets": "public/vendor/local-test-hook"
             }
         }
     }

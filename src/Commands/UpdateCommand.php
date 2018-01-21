@@ -7,7 +7,7 @@ use Larapack\Hooks\Hooks;
 
 class UpdateCommand extends Command
 {
-    protected $signature = 'hook:update {name} {version?}';
+    protected $signature = 'hook:update {name} {version?} {--no-migrate} {--no-seed} {--no-publish} {--force}';
 
     protected $description = 'Update a hook';
 
@@ -35,10 +35,17 @@ class UpdateCommand extends Command
 
         $hook = $hooks->where('name', $name)->first();
 
-        if ($this->hooks->update($name, $version)) {
-            return $this->info("Hook [{$name}] have been updated!");
-        }
+        $updated = $this->hooks->update(
+            $name,
+            $version,
+            !$this->option('no-migrate'),
+            !$this->option('no-seed'),
+            !$this->option('no-publish'),
+            $this->option('force')
+        );
 
-        return $this->info('Nothing to update.');
+        return $updated
+            ? $this->info("Hook [{$name}] have been updated!")
+            : $this->info('Nothing to update.');
     }
 }

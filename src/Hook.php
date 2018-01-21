@@ -67,15 +67,18 @@ class Hook implements ArrayAccess, Arrayable
         $this->composerJson = json_decode($this->getComposerJsonFile(), true);
     }
 
-    public function getComposerJsonFile()
+    public function getPath()
     {
-        $path = 'vendor/'.$this->name;
-
         if ($this->isLocal()) {
-            $path = 'hooks/'.$this->name;
+            return base_path('hooks/'.$this->name);
         }
 
-        return $this->filesystem->get(base_path($path.'/composer.json'));
+        return base_path('vendor/'.$this->name);
+    }
+
+    public function getComposerJsonFile()
+    {
+        return $this->filesystem->get($this->getPath().'/composer.json');
     }
 
     public function setLatest($latest)
@@ -106,7 +109,7 @@ class Hook implements ArrayAccess, Arrayable
     public function outdated()
     {
         if (is_null($this->latest)) {
-            $this->latest = app('hooks')->outdated($hook);
+            $this->latest = app('hooks')->outdated($this->name);
         }
 
         return $this->latest != $this->version;

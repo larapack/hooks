@@ -7,7 +7,7 @@ use Larapack\Hooks\Hooks;
 
 class UninstallCommand extends Command
 {
-    protected $signature = 'hook:uninstall {name} {--delete}';
+    protected $signature = 'hook:uninstall {name} {--delete} {--no-unmigrate} {--no-unseed} {--no-unpublish}';
 
     protected $description = 'Uninstall a hook';
 
@@ -29,7 +29,13 @@ class UninstallCommand extends Command
     {
         $name = $this->argument('name');
 
-        $this->hooks->uninstall($name, $this->option('delete'));
+        $this->hooks->uninstall(
+            $name,
+            $this->option('delete'),
+            !$this->option('no-unmigrate'),
+            !$this->option('no-unseed'),
+            !$this->option('no-unpublish')
+        );
 
         $this->info("Hook [{$name}] have been uninstalled.");
     }
