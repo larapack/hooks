@@ -27,7 +27,7 @@ class Hooks
 
     protected static $useVersionWildcardOnUpdate = false;
     protected static $versionWildcard = '*';
-    protected static $localVersion = 'dev-master';
+    protected static $localVersion = '*';
 
     protected static $fakeDateTime = false;
 
