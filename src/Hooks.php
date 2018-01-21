@@ -6,11 +6,13 @@ use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Symfony\Component\Console\Input\ArrayInput;
+use Illuminate\Foundation\Application;
 
 class Hooks
 {
     protected static $remote = 'https://larapack.io';
 
+    protected $app;
     protected $filesystem;
     protected $migrator;
     protected $hooks;
@@ -33,6 +35,7 @@ class Hooks
 
     public function __construct(Filesystem $filesystem, Migrator $migrator)
     {
+        $this->app = Application::getInstance();
         $this->filesystem = $filesystem;
         $this->migrator = $migrator;
 
@@ -860,6 +863,8 @@ class Hooks
         $this->composer->run($input, $output = new RawOutput());
 
         $this->composerOutput[] = $output;
+
+        Application::setInstance($this->app);
 
         return $output->output();
     }
