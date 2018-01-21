@@ -317,13 +317,17 @@ class Hooks
      *
      * @param $name
      * @param string|null $version
+     * @param bool        $migrate
+     * @param bool        $seed
+     * @param bool        $publish
+     * @param bool        $force
      *
      * @throws \Larapack\Hooks\Exceptions\HookNotFoundException
      * @throws \Larapack\Hooks\Exceptions\HookNotInstalledException
      *
      * @return bool
      */
-    public function update($name, $version, $migrate, $seed, $publish, $forcePublishing)
+    public function update($name, $version, $migrate = true, $seed = true, $publish = true, $force = false)
     {
         // Check if hook exists
         if (!$this->downloaded($name)) {
@@ -348,7 +352,7 @@ class Hooks
             }
         }
 
-        if (!$forcePublishing) {
+        if (!$force) {
             $this->makeTemponaryBackup($this->hooks[$name]);
         }
 
@@ -379,7 +383,7 @@ class Hooks
         }
 
         if ($publish) {
-            $this->publishHook($this->hooks[$name], $forcePublishing);
+            $this->publishHook($this->hooks[$name], $force);
         }
 
         $this->clearTemponaryFiles();

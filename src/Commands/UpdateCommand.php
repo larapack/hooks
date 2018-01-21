@@ -7,7 +7,7 @@ use Larapack\Hooks\Hooks;
 
 class UpdateCommand extends Command
 {
-    protected $signature = 'hook:update {name} {version?} {--without-migrating} {--without-seeding} {--without-publishing} {--force-publish}';
+    protected $signature = 'hook:update {name} {version?} {--no-migrate} {--no-seed} {--no-publish} {--force}';
 
     protected $description = 'Update a hook';
 
@@ -38,10 +38,10 @@ class UpdateCommand extends Command
         $updated = $this->hooks->update(
             $name,
             $version,
-            !$this->option('without-migrating'),
-            !$this->option('without-seeding'),
-            !$this->option('without-publishing'),
-            $this->option('force-publish')
+            !$this->option('no-migrate'),
+            !$this->option('no-seed'),
+            !$this->option('no-publish'),
+            $this->option('force')
         );
 
         return $updated

@@ -677,8 +677,8 @@ class HooksTest extends TestCase
         $this->artisan('hook:install', [
             'name'                => 'migrating-hook',
             'version'             => 'v1.0.0',
-            '--without-migrating' => true,
-            '--without-seeding'   => true,
+            '--no-migrate'        => true,
+            '--no-seed'           => true,
         ]);
 
         $this->assertFalse(Schema::hasTable('tests'));
@@ -729,7 +729,7 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name'                  => 'migrating-hook',
-            '--without-unmigrating' => true,
+            '--no-unmigrate'        => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -795,8 +795,8 @@ class HooksTest extends TestCase
         $this->artisan('hook:update', [
             'name'                => 'migrating-hook',
             'version'             => 'v2.0.0',
-            '--without-migrating' => true,
-            '--without-seeding'   => true,
+            '--no-migrate'        => true,
+            '--no-seed'           => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -831,7 +831,7 @@ class HooksTest extends TestCase
         $this->artisan('hook:install', [
             'name'              => 'migrating-hook',
             'version'           => 'v1.0.0',
-            '--without-seeding' => true,
+            '--no-seed'         => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -856,7 +856,7 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name'                  => 'migrating-hook',
-            '--without-unmigrating' => true,
+            '--no-unmigrate'        => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -881,8 +881,8 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name'                  => 'migrating-hook',
-            '--without-unmigrating' => true,
-            '--without-unseeding'   => true,
+            '--no-unmigrate'        => true,
+            '--no-unseed'           => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -935,7 +935,7 @@ class HooksTest extends TestCase
         $this->artisan('hook:update', [
             'name'              => 'migrating-hook',
             'version'           => 'v2.0.0',
-            '--without-seeding' => true,
+            '--no-seed'         => true,
         ]);
 
         $this->assertTrue(Schema::hasTable('tests'));
@@ -973,7 +973,7 @@ class HooksTest extends TestCase
         $this->artisan('hook:install', [
             'name'                 => 'migrating-hook',
             'version'              => 'v1.0.0',
-            '--without-publishing' => true,
+            '--no-publish'         => true,
         ]);
 
         $this->assertFalse($filesystem->exists(base_path('public/vendor')));
@@ -1061,7 +1061,7 @@ class HooksTest extends TestCase
         // Uninstall hook
         $this->artisan('hook:uninstall', [
             'name'                   => 'migrating-hook',
-            '--without-unpublishing' => true,
+            '--no-unpublish'         => true,
         ]);
 
         $this->assertTrue($filesystem->exists(base_path('public/vendor/migration-hook/assets')));
@@ -1127,7 +1127,7 @@ class HooksTest extends TestCase
         $this->artisan('hook:update', [
             'name'                 => 'migrating-hook',
             'version'              => 'v2.0.0',
-            '--without-publishing' => true,
+            '--no-publish'         => true,
         ]);
 
         $this->assertTrue($filesystem->exists(base_path('public/vendor/migration-hook/assets/script.js')));
@@ -1203,7 +1203,7 @@ class HooksTest extends TestCase
         $this->artisan('hook:update', [
             'name'            => 'migrating-hook',
             'version'         => 'v2.0.0',
-            '--force-publish' => true,
+            '--force'         => true,
         ]);
 
         $this->assertTrue($filesystem->exists(base_path('public/vendor/migration-hook/assets/script.js')));
