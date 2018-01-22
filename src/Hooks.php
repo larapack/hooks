@@ -1073,7 +1073,7 @@ class Hooks
                 if ($filesystem->isDirectory($publishPath)) {
                     return $filesystem->exists($publishPath.'/'.$filename);
                 }
-                
+
                 return $filesystem->exists($publishPath);
             });
 
