@@ -34,11 +34,21 @@ class HooksServiceProvider extends ServiceProvider
         // Register Hooks system and aliases
         $this->app->singleton(Hooks::class, function ($app) {
             $filesystem = $app[Filesystem::class];
-            $migrator = $app['migrator'];
+            $migrator = $app[Migrator::class];
 
             return new Hooks($filesystem, $migrator);
         });
+
         $this->app->alias(Hooks::class, 'hooks');
+
+        // The migrator is responsible for actually running and rollback the migration
+        // files in the application. We'll pass in our database connection resolver
+        // so the migrator can resolve any of these connections when it needs to.
+        $this->app->singleton(Migrator::class, function ($app) {
+            $repository = $app['migration.repository'];
+
+            return new Migrator($repository, $app['db'], $app['files']);
+        });
     }
 
     /**
