@@ -21,10 +21,10 @@
                 "resources/database/migrations"
             ],
             "seeders": [
-                "resources/database/seeds/DatabaseSeeder"
+                "resources/database/seeds/DatabaseSeeder.php"
             ],
             "unseeders": [
-                "resources/database/unseeds/DatabaseUnseeder"
+                "resources/database/unseeds/DatabaseUnseeder.php"
             ],
             "assets": {
                 "resources/assets": "public/vendor/kebab-case"
