@@ -1305,7 +1305,7 @@ class HooksTest extends TestCase
 
         // Uninstall hook
         $this->artisan('hook:uninstall', [
-            'name'    => 'single-migrating-hook',
+            'name'           => 'single-migrating-hook',
             '--no-unmigrate' => true,
         ]);
 

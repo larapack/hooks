@@ -78,7 +78,7 @@ class Migrator extends BaseMigrator
         foreach ($migrations as $migration) {
             $migration = (object) $migration;
 
-            if (! $file = Arr::get($files, $migration->migration)) {
+            if (!$file = Arr::get($files, $migration->migration)) {
                 $this->note("<fg=red>Migration not found:</> {$migration->migration}");
 
                 continue;
