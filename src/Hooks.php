@@ -3,7 +3,6 @@
 namespace Larapack\Hooks;
 
 use Carbon\Carbon;
-use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -910,7 +909,13 @@ class Hooks
     {
         $migrations = (array) $hook->getComposerHookKey('migrations', []);
 
-        $this->migrator->run($this->realPath($migrations, $hook->getPath().'/')->all());
+        foreach ($migrations as $path) {
+            if ($this->filesystem->isDirectory($hook->getPath().'/'.$path)) {
+                $this->migrator->run($this->realPath([$path], $hook->getPath().'/')->all());
+            } else {
+                $this->migrator->runFiles($this->realPath([$path], $hook->getPath().'/')->all());
+            }
+        }
     }
 
     /**
@@ -922,7 +927,13 @@ class Hooks
     {
         $migrations = (array) $hook->getComposerHookKey('migrations', []);
 
-        $this->migrator->reset($this->realPath($migrations, $hook->getPath().'/')->all());
+        foreach ($migrations as $path) {
+            if ($this->filesystem->isDirectory($hook->getPath().'/'.$path)) {
+                $this->migrator->reset($this->realPath([$path], $hook->getPath().'/')->all());
+            } else {
+                $this->migrator->resetFiles($this->realPath([$path], $hook->getPath().'/')->all());
+            }
+        }
     }
 
     /**
@@ -968,10 +979,17 @@ class Hooks
                 continue;
             }
 
-            $allFiles = collect($this->filesystem->allFiles($realLocation))
-                ->map(function ($file) use ($realLocation) {
+            if ($filesystem->isDirectory($realLocation)) {
+                $allFiles = collect($filesystem->allFiles($realLocation))->map(function ($file) use ($realLocation) {
                     return substr($file->getRealPath(), strlen($realLocation) + 1);
                 });
+            } else {
+                $allFiles = collect([new \Symfony\Component\Finder\SplFileInfo(
+                    $realLocation,
+                    '',
+                    basename($realLocation)
+                )]);
+            }
 
             $newFiles = $allFiles->filter(function ($filename) use ($publishPath, $filesystem) {
                 return !$filesystem->exists($publishPath.'/'.$filename);
@@ -996,6 +1014,16 @@ class Hooks
 
             $newFiles->merge($updatedFiles)
                 ->each(function ($filename) use ($realLocation, $publishPath, $filesystem) {
+                    if (!$filesystem->isDirectory($realLocation)) {
+                        $directory = substr($publishPath, 0, -strlen(basename($publishPath)));
+
+                        if (!$filesystem->isDirectory($directory)) {
+                            $filesystem->makeDirectory($directory, 0755, true, true);
+                        }
+
+                        return $filesystem->copy($realLocation, $publishPath);
+                    }
+
                     $directory = substr($publishPath.'/'.$filename, 0, -strlen(basename($filename)));
 
                     if (!$filesystem->isDirectory($directory)) {
@@ -1028,17 +1056,33 @@ class Hooks
                 continue;
             }
 
-            $allFiles = collect($this->filesystem->allFiles($realLocation))
-                ->map(function ($file) use ($realLocation) {
-                    return substr($file->getRealPath(), strlen($realLocation) + 1);
-                });
+            if ($filesystem->isDirectory($realLocation)) {
+                $allFiles = collect($this->filesystem->allFiles($realLocation))
+                    ->map(function ($file) use ($realLocation) {
+                        return substr($file->getRealPath(), strlen($realLocation) + 1);
+                    });
+            } else {
+                $allFiles = collect([new \Symfony\Component\Finder\SplFileInfo(
+                    $realLocation,
+                    '',
+                    basename($realLocation)
+                )]);
+            }
 
             $existingFiles = $allFiles->filter(function ($filename) use ($publishPath, $filesystem) {
-                return $filesystem->exists($publishPath.'/'.$filename);
+                if ($filesystem->isDirectory($publishPath)) {
+                    return $filesystem->exists($publishPath.'/'.$filename);
+                }
+
+                return $filesystem->exists($publishPath);
             });
 
             $existingFiles->each(function ($filename) use ($publishPath, $filesystem) {
-                $filesystem->delete($publishPath.'/'.$filename);
+                if ($filesystem->isDirectory($publishPath)) {
+                    return $filesystem->delete($publishPath.'/'.$filename);
+                }
+
+                $filesystem->delete($publishPath);
             });
         }
     }
@@ -1055,7 +1099,17 @@ class Hooks
 
         $this->realPath($folders, $basePath)
             ->each(function ($folder) use ($filesystem) {
-                collect($filesystem->files($folder))->filter(function ($file) {
+                if ($filesystem->isDirectory($folder)) {
+                    $files = $filesystem->files($folder);
+                } else {
+                    $files = [new \Symfony\Component\Finder\SplFileInfo(
+                        $folder,
+                        '',
+                        basename($folder)
+                    )];
+                }
+
+                collect($files)->filter(function ($file) {
                     return $file->getExtension() == 'php';
                 })->each(function ($file) {
                     $class = substr($file->getFilename(), 0, -4);
