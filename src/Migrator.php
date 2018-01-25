@@ -88,7 +88,7 @@ class Migrator extends BaseMigrator
 
             $this->runDown(
                 $file, $migration,
-                $options['pretend'] ?? false
+                array_get($options, 'pretend', false)
             );
         }
 
