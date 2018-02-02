@@ -516,7 +516,7 @@ class Hooks
 
         foreach ($files as $file) {
             if ($path = $file->getRelativePath()) {
-                $parts = explode('/', $path);
+                $parts = explode('/', str_replace('\\', '/', $path));
 
                 $location = base_path("hooks/{$name}");
 
