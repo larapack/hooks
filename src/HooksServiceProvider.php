@@ -21,15 +21,12 @@ class HooksServiceProvider extends ServiceProvider
             return;
         }
 
-        // Registers resources and commands
-        if ($this->app->runningInConsole()) {
-            $this->registerCommands();
+        $this->registerCommands();
 
-            $this->publishes(
-                [$configPath => config_path('hooks.php')],
-                'hooks-config'
-            );
-        }
+        $this->publishes(
+            [$configPath => config_path('hooks.php')],
+            'hooks-config'
+        );
 
         // Register Hooks system and aliases
         $this->app->singleton(Hooks::class, function ($app) {
