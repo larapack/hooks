@@ -5,6 +5,7 @@ namespace Larapack\Hooks;
 use Carbon\Carbon;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Arr;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks
@@ -803,8 +804,8 @@ class Hooks
             $composer = json_decode($this->filesystem->get($file), true);
         }
 
-        foreach (array_get($composer, 'packages', []) as $package) {
-            if (array_get($package, 'notification-url') == static::$remote.'/downloads') {
+        foreach (Arr::get($composer, 'packages', []) as $package) {
+            if (Arr::get($package, 'notification-url') == static::$remote.'/downloads') {
                 $hooks[$package['name']] = new Hook($package);
             }
         }
@@ -815,7 +816,7 @@ class Hooks
     public function readLocalHooks()
     {
         $hooks = [];
-        $directories = array_except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
+        $directories = Arr::except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
         foreach ($directories as $directory) {
             if (!$this->filesystem->exists($directory.'/composer.json')) {
                 continue;
@@ -879,8 +880,8 @@ class Hooks
         $hooks = [];
         $results = json_decode($output, true);
 
-        foreach (array_get($results, 'installed', []) as $package) {
-            if (isset($this->hooks[array_get($package, 'name')])) {
+        foreach (Arr::get($results, 'installed', []) as $package) {
+            if (isset($this->hooks[Arr::get($package, 'name')])) {
                 $outdated[$package['name']] = $package['latest'];
                 $hook = $this->hooks[$package['name']];
                 $hook->setLatest($package['latest']);
