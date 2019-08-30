@@ -4,7 +4,7 @@ namespace Larapack\Hooks\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Larapack\Hooks\Composer;
 use Larapack\Hooks\Events\Setup;
 use Larapack\Hooks\HooksServiceProvider;
@@ -40,7 +40,7 @@ class SetupCommand extends Command
             'url'  => $this->option('url'),
         ]);
 
-        if (Arr::startsWith($this->option('url'), 'http://')) {
+        if (Str::startsWith($this->option('url'), 'http://')) {
             $composer->addConfig('secure-http', false);
         }
 
