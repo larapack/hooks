@@ -37,6 +37,6 @@ class UninstallCommand extends Command
             !$this->option('no-unpublish')
         );
 
-        $this->info("Hook [{$name}] have been uninstalled.");
+        $this->info("Hook [{$name}] has been uninstalled.");
     }
 }

@@ -31,6 +31,6 @@ class DisableCommand extends Command
 
         $this->hooks->disable($name);
 
-        $this->info("Hook [{$name}] have been disabled.");
+        $this->info("Hook [{$name}] has been disabled.");
     }
 }

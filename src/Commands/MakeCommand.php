@@ -33,6 +33,6 @@ class MakeCommand extends Command
 
         $this->hooks->make($name);
 
-        $this->info("Hook [{$name}] have been made.");
+        $this->info("Hook [{$name}] has been made.");
     }
 }

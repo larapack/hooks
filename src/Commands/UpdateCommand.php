@@ -45,7 +45,7 @@ class UpdateCommand extends Command
         );
 
         return $updated
-            ? $this->info("Hook [{$name}] have been updated!")
+            ? $this->info("Hook [{$name}] has been updated!")
             : $this->info('Nothing to update.');
     }
 }

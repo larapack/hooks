@@ -31,6 +31,6 @@ class EnableCommand extends Command
 
         $this->hooks->enable($name);
 
-        $this->info("Hook [{$name}] have been enabled.");
+        $this->info("Hook [{$name}] has been enabled.");
     }
 }

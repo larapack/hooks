@@ -508,9 +508,9 @@ class Hooks
     {
         $replaces = [
             'kebab-case'          => $name,
-            'snake_case'          => snake_case(str_replace('-', '_', $name)),
-            'camelCase'           => camel_case(str_replace('-', '_', $name)),
-            'StudlyCase'          => studly_case(str_replace('-', '_', $name)),
+            'snake_case'          => Str::snake(str_replace('-', '_', $name)),
+            'camelCase'           => Str::camel(str_replace('-', '_', $name)),
+            'StudlyCase'          => Str::studly(str_replace('-', '_', $name)),
             'MIGRATION_DATE_TIME' => $this->migrationDateTimeString(),
         ];
 
