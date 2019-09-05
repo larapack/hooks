@@ -5,6 +5,7 @@ namespace Larapack\Hooks;
 use ArrayAccess;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 
 class Hook implements ArrayAccess, Arrayable
 {
@@ -128,7 +129,7 @@ class Hook implements ArrayAccess, Arrayable
 
     public function setAttribute($key, $value)
     {
-        $method = camel_case('set_'.$key.'_attribute');
+        $method = Str::camel('set_'.$key.'_attribute');
 
         if (method_exists($this, $method)) {
             return $this->$method($value);
@@ -139,7 +140,7 @@ class Hook implements ArrayAccess, Arrayable
 
     public function getAttribute($key)
     {
-        $method = camel_case('get_'.$key.'_attribute');
+        $method = Str::camel('get_'.$key.'_attribute');
 
         if (method_exists($this, $method)) {
             return $this->$method();

@@ -40,9 +40,9 @@ class InstallCommand extends Command
         if ($this->option('enable')) {
             $this->hooks->enable($name);
 
-            $this->info("Hook [{$name}] have been installed and enabled.");
+            $this->info("Hook [{$name}] has been installed and enabled.");
         } else {
-            $this->info("Hook [{$name}] have been installed.");
+            $this->info("Hook [{$name}] has been installed.");
         }
     }
 }

@@ -5,6 +5,8 @@ namespace Larapack\Hooks;
 use Carbon\Carbon;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks
@@ -478,7 +480,7 @@ class Hooks
      */
     public function make($name)
     {
-        $studlyCase = studly_case($name);
+        $studlyCase = Str::studly($name);
 
         // Check if already exists
         if ($this->downloaded($name)) {
@@ -506,9 +508,9 @@ class Hooks
     {
         $replaces = [
             'kebab-case'          => $name,
-            'snake_case'          => snake_case(str_replace('-', '_', $name)),
-            'camelCase'           => camel_case(str_replace('-', '_', $name)),
-            'StudlyCase'          => studly_case(str_replace('-', '_', $name)),
+            'snake_case'          => Str::snake(str_replace('-', '_', $name)),
+            'camelCase'           => Str::camel(str_replace('-', '_', $name)),
+            'StudlyCase'          => Str::studly(str_replace('-', '_', $name)),
             'MIGRATION_DATE_TIME' => $this->migrationDateTimeString(),
         ];
 
@@ -803,8 +805,8 @@ class Hooks
             $composer = json_decode($this->filesystem->get($file), true);
         }
 
-        foreach (array_get($composer, 'packages', []) as $package) {
-            if (array_get($package, 'notification-url') == static::$remote.'/downloads') {
+        foreach (Arr::get($composer, 'packages', []) as $package) {
+            if (Arr::get($package, 'notification-url') == static::$remote.'/downloads') {
                 $hooks[$package['name']] = new Hook($package);
             }
         }
@@ -815,7 +817,7 @@ class Hooks
     public function readLocalHooks()
     {
         $hooks = [];
-        $directories = array_except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
+        $directories = Arr::except($this->filesystem->directories(base_path('hooks')), ['.', '..']);
         foreach ($directories as $directory) {
             if (!$this->filesystem->exists($directory.'/composer.json')) {
                 continue;
@@ -879,8 +881,8 @@ class Hooks
         $hooks = [];
         $results = json_decode($output, true);
 
-        foreach (array_get($results, 'installed', []) as $package) {
-            if (isset($this->hooks[array_get($package, 'name')])) {
+        foreach (Arr::get($results, 'installed', []) as $package) {
+            if (isset($this->hooks[Arr::get($package, 'name')])) {
                 $outdated[$package['name']] = $package['latest'];
                 $hook = $this->hooks[$package['name']];
                 $hook->setLatest($package['latest']);
