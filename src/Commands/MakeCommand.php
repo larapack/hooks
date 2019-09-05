@@ -3,6 +3,7 @@
 namespace Larapack\Hooks\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Larapack\Hooks\Hooks;
 
 class MakeCommand extends Command
@@ -28,7 +29,7 @@ class MakeCommand extends Command
     public function handle()
     {
         $name = $this->argument('name');
-        $name = kebab_case($name);
+        $name = Str::kebab($name);
 
         $this->hooks->make($name);
 

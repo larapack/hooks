@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArrayInput;
 
 class Hooks
@@ -479,7 +480,7 @@ class Hooks
      */
     public function make($name)
     {
-        $studlyCase = studly_case($name);
+        $studlyCase = Str::studly($name);
 
         // Check if already exists
         if ($this->downloaded($name)) {
