@@ -16,7 +16,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     /**
      * Setup the test environment.
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -65,7 +65,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $this->artisan('migrate');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         // Cleanup old hooks before testing
         app(Filesystem::class)->deleteDirectory(base_path('hooks'));

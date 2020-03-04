@@ -14,7 +14,7 @@ class HooksTest extends TestCase
 {
     const COMPOSER_REPOSITORY = 'https://testing.larapack.io';
 
-    public function setUp()
+    public function setUp(): void
     {
         // Set Hooks environment
         Hooks::setMemoryLimit('5G');
