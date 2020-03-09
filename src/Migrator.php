@@ -19,7 +19,8 @@ class Migrator extends BaseMigrator
         $this->notes = [];
 
         $this->requireFiles($migrations = $this->pendingMigrations(
-            $files, $this->repository->getRan()
+            $files,
+            $this->repository->getRan()
         ));
 
         // Once we have all these migrations that are outstanding we are ready to run
@@ -62,7 +63,9 @@ class Migrator extends BaseMigrator
         })->all();
 
         return $this->rollbackMigrationsByFiles(
-            $migrations, $files, compact('pretend')
+            $migrations,
+            $files,
+            compact('pretend')
         );
     }
 
@@ -87,7 +90,8 @@ class Migrator extends BaseMigrator
             $rolledBack[] = $file;
 
             $this->runDown(
-                $file, $migration,
+                $file,
+                $migration,
                 Arr::get($options, 'pretend', false)
             );
         }
