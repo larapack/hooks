@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "composer/composer": ">=1.4|1.10.0-RC"
+        "composer/composer": ">=1.4"
     },
     "require-dev": {
         "orchestra/testbench": ">=3.0",
